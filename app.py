@@ -13,1089 +13,1031 @@ try:
 except ImportError:
     rasterio = None
 
-# ---------------------------------------------------------------------------
-# PAGE CONFIG
-# ---------------------------------------------------------------------------
+# ============================================================================
+# CONFIG
+# ============================================================================
 st.set_page_config(
-    page_title="FloodLens AI | Pakistan Earth-System Intelligence",
+    page_title="FloodLens AI · Mission Control",
     page_icon="🛰️",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
 
 MONTHLY_FILE = DATA / "Pakistan_GPM_Rainfall_2001_2024.csv"
-SPATIAL_FILE = DATA / "FloodLens_Pakistan_Spatial_Rainfall_2001_2024.csv"
 TRENDS_FILE = DATA / "FloodLens_Pakistan_Pixel_Trends_2001_2024.csv"
 BOUNDARY_FILE = DATA / "pakistan_boundary.geojson"
 TERRAIN_FILE = DATA / "FloodLens_Pakistan_Terrain_1km.tif"
 
-# ---------------------------------------------------------------------------
-# DESIGN TOKENS
-# ---------------------------------------------------------------------------
-BG_MAIN = "#080D18"
-BG_SECOND = "#101827"
-PANEL = "#141F30"
-ACCENT = "#27D9F2"
-ACCENT_2 = "#648CFF"
-HIGHLIGHT = "#A78BFA"
-TEXT = "#F1F5F9"
-TEXT_MUTED = "#94A3B8"
-POS = "#34D399"
-NEG = "#FB7185"
-NEUTRAL = "#64748B"
+# ============================================================================
+# TOKENS
+# ============================================================================
+BG        = "#060b14"
+BG_2      = "#0b1421"
+PANEL     = "#0f1a2b"
+PANEL_2   = "#131f33"
+BORDER    = "rgba(39,217,242,0.14)"
+BORDER_S  = "rgba(148,163,184,0.10)"
+CYAN      = "#27D9F2"
+BLUE      = "#648CFF"
+VIOLET    = "#A78BFA"
+TEXT      = "#F1F5F9"
+MUTED     = "#7c8ba1"
+POS       = "#34D399"
+NEG       = "#FB7185"
+NEUTRAL   = "#475569"
 
-# ---------------------------------------------------------------------------
-# GLOBAL CSS
-# ---------------------------------------------------------------------------
-CUSTOM_CSS = f"""
+# ============================================================================
+# CSS — MISSION CONTROL SHELL
+# ============================================================================
+CSS = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-html, body, [class*="css"] {{
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-}}
+html, body, [class*="css"] {{ font-family: 'Inter', sans-serif; }}
+.stApp {{ background: {BG}; color: {TEXT}; }}
 
-.stApp {{
-    background: radial-gradient(ellipse at top, #0d1526 0%, {BG_MAIN} 55%);
-    color: {TEXT};
-}}
-
-/* Hide default Streamlit chrome */
 #MainMenu, footer, header {{ visibility: hidden; }}
-.block-container {{ padding-top: 1.2rem; padding-bottom: 3rem; max-width: 1500px; }}
+.block-container {{ padding: 0.6rem 1rem 1rem 1rem !important; max-width: 100% !important; }}
+[data-testid="stSidebar"] {{ display: none; }}
 
-/* Sidebar */
-[data-testid="stSidebar"] {{
-    background: {BG_SECOND};
-    border-right: 1px solid rgba(39, 217, 242, 0.08);
-}}
-[data-testid="stSidebar"] .block-container {{ padding-top: 1.5rem; }}
-
-/* Radio nav in sidebar */
-[data-testid="stSidebar"] [role="radiogroup"] label {{
-    padding: 0.6rem 0.8rem;
-    border-radius: 8px;
-    margin-bottom: 2px;
-    border-left: 2px solid transparent;
-    transition: all 0.15s ease;
-    color: {TEXT_MUTED};
-}}
-[data-testid="stSidebar"] [role="radiogroup"] label:hover {{
-    background: rgba(39, 217, 242, 0.06);
-    color: {TEXT};
-}}
-[data-testid="stSidebar"] [role="radiogroup"] label[data-checked="true"],
-[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {{
-    background: rgba(39, 217, 242, 0.09);
-    border-left: 2px solid {ACCENT};
-    color: {TEXT};
-}}
-
-/* Buttons */
-.stButton > button {{
+/* ---------- TOP STATUS BAR ---------- */
+.mc-topbar {{
+    display: grid; grid-template-columns: auto 1fr auto;
+    align-items: center; gap: 24px;
     background: {PANEL};
-    color: {TEXT};
-    border: 1px solid rgba(39, 217, 242, 0.2);
-    border-radius: 8px;
-}}
-.stButton > button:hover {{
-    border-color: {ACCENT};
-    color: {ACCENT};
-}}
-
-/* Metrics (fallback styling) */
-[data-testid="stMetric"] {{
-    background: {PANEL};
-    border: 1px solid rgba(39, 217, 242, 0.12);
-    border-radius: 10px;
-    padding: 14px 18px;
-}}
-[data-testid="stMetricLabel"] p {{
-    color: {TEXT_MUTED} !important;
-    font-size: 0.75rem !important;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}}
-[data-testid="stMetricValue"] {{
-    color: {TEXT} !important;
+    border: 1px solid {BORDER};
+    padding: 10px 18px;
+    margin-bottom: 12px;
     font-family: 'JetBrains Mono', monospace;
 }}
-
-/* Expander */
-.streamlit-expanderHeader {{
-    background: {PANEL};
-    border-radius: 8px;
-    color: {TEXT_MUTED};
-}}
-
-/* Divider */
-hr {{ border-color: rgba(148, 163, 184, 0.15); }}
-
-/* Custom classes */
-.fl-header {{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4px 0 20px 0;
-    border-bottom: 1px solid rgba(39, 217, 242, 0.08);
-    margin-bottom: 28px;
-    flex-wrap: wrap;
-    gap: 16px;
-}}
-.fl-brand {{
-    display: flex; align-items: center; gap: 14px;
-}}
-.fl-logo {{
-    width: 40px; height: 40px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, {ACCENT} 0%, {ACCENT_2} 100%);
+.mc-brand {{ display: flex; align-items: center; gap: 12px; }}
+.mc-logo {{
+    width: 30px; height: 30px; border-radius: 6px;
+    background: linear-gradient(135deg, {CYAN}, {BLUE});
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 1.1rem; color: {BG_MAIN};
-    box-shadow: 0 0 24px rgba(39, 217, 242, 0.25);
+    font-weight: 700; font-size: 0.85rem; color: {BG};
+    box-shadow: 0 0 16px rgba(39,217,242,0.35);
 }}
-.fl-title {{
-    font-size: 1.15rem; font-weight: 600;
-    color: {TEXT}; letter-spacing: -0.01em; line-height: 1.1;
+.mc-brand-text {{ font-size: 0.95rem; font-weight: 600; color: {TEXT}; letter-spacing: 0.02em; }}
+.mc-brand-sub {{ font-size: 0.6rem; color: {MUTED}; letter-spacing: 0.16em; text-transform: uppercase; margin-top: 1px; }}
+
+.mc-telemetry {{
+    display: flex; gap: 26px; justify-content: center;
+    font-size: 0.65rem; letter-spacing: 0.08em; color: {MUTED};
 }}
-.fl-sub {{
-    font-size: 0.75rem; color: {TEXT_MUTED}; letter-spacing: 0.02em;
-    margin-top: 2px;
-}}
-.fl-header-badges {{
-    display: flex; gap: 10px; flex-wrap: wrap;
-}}
-.fl-badge {{
+.mc-telemetry span b {{ color: {CYAN}; font-weight: 500; }}
+
+.mc-badges {{ display: flex; gap: 8px; }}
+.mc-chip {{
     display: inline-flex; align-items: center; gap: 6px;
-    background: {PANEL};
-    border: 1px solid rgba(148, 163, 184, 0.12);
-    border-radius: 999px;
-    padding: 6px 12px;
-    font-size: 0.72rem;
-    color: {TEXT_MUTED};
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.02em;
+    padding: 4px 10px;
+    border: 1px solid {BORDER_S};
+    font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: {MUTED}; background: {BG_2};
 }}
-.fl-badge-dot {{
-    width: 6px; height: 6px; border-radius: 50%;
-    background: {POS};
-    box-shadow: 0 0 8px {POS};
-}}
-.fl-badge-dot.accent {{ background: {ACCENT}; box-shadow: 0 0 8px {ACCENT}; }}
+.mc-dot {{ width: 5px; height: 5px; border-radius: 50%; background: {POS}; box-shadow: 0 0 6px {POS}; }}
+.mc-dot.cyan {{ background: {CYAN}; box-shadow: 0 0 6px {CYAN}; }}
 
-.fl-eyebrow {{
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem; letter-spacing: 0.18em;
-    color: {ACCENT}; text-transform: uppercase;
-    margin-bottom: 10px;
-}}
-.fl-h1 {{
-    font-size: 2.4rem; font-weight: 600;
-    letter-spacing: -0.025em; line-height: 1.1;
-    color: {TEXT}; margin-bottom: 12px;
-}}
-.fl-h1 .accent {{
-    background: linear-gradient(90deg, {ACCENT}, {ACCENT_2});
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}}
-.fl-lead {{
-    color: {TEXT_MUTED}; font-size: 1rem; line-height: 1.6;
-    max-width: 780px; margin-bottom: 32px;
-}}
-
-.fl-kpi {{
-    background: linear-gradient(180deg, {PANEL} 0%, {BG_SECOND} 100%);
-    border: 1px solid rgba(39, 217, 242, 0.10);
-    border-radius: 12px;
-    padding: 18px 20px;
-    height: 100%;
+/* ---------- HUD CARD — corner brackets ---------- */
+.hud {{
     position: relative;
-    overflow: hidden;
-}}
-.fl-kpi::before {{
-    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, {ACCENT}, transparent);
-}}
-.fl-kpi-label {{
-    font-size: 0.7rem; text-transform: uppercase;
-    letter-spacing: 0.12em; color: {TEXT_MUTED};
-    margin-bottom: 8px; font-family: 'JetBrains Mono', monospace;
-}}
-.fl-kpi-value {{
-    font-size: 1.7rem; font-weight: 600;
-    color: {TEXT}; font-family: 'JetBrains Mono', monospace;
-    letter-spacing: -0.02em; line-height: 1;
-}}
-.fl-kpi-value.pos {{ color: {POS}; }}
-.fl-kpi-value.neg {{ color: {NEG}; }}
-.fl-kpi-value.neutral {{ color: {TEXT}; }}
-.fl-kpi-sub {{
-    font-size: 0.72rem; color: {TEXT_MUTED}; margin-top: 8px;
-}}
-
-.fl-section-title {{
-    font-size: 0.72rem; text-transform: uppercase;
-    letter-spacing: 0.15em; color: {TEXT_MUTED};
-    margin: 28px 0 14px 0; font-family: 'JetBrains Mono', monospace;
-    display: flex; align-items: center; gap: 10px;
-}}
-.fl-section-title::after {{
-    content: ""; flex: 1; height: 1px;
-    background: linear-gradient(90deg, rgba(148,163,184,0.2), transparent);
-}}
-
-.fl-panel {{
     background: {PANEL};
-    border: 1px solid rgba(148, 163, 184, 0.10);
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-top: 12px;
-}}
-.fl-panel-title {{
-    font-size: 0.95rem; font-weight: 600; color: {TEXT};
-    margin-bottom: 4px;
-}}
-.fl-panel-sub {{
-    font-size: 0.8rem; color: {TEXT_MUTED}; margin-bottom: 16px;
-}}
-
-.fl-interpretation {{
-    background: linear-gradient(180deg, rgba(39,217,242,0.04) 0%, rgba(20,31,48,0.4) 100%);
-    border-left: 3px solid {ACCENT};
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin: 20px 0;
-    color: {TEXT_MUTED}; font-size: 0.9rem; line-height: 1.65;
-}}
-.fl-interpretation strong {{ color: {TEXT}; font-weight: 600; }}
-
-.fl-warning {{
-    background: rgba(251, 113, 133, 0.06);
-    border-left: 3px solid {NEG};
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin: 16px 0;
-    color: {TEXT_MUTED}; font-size: 0.88rem; line-height: 1.6;
-}}
-.fl-warning strong {{ color: {NEG}; }}
-
-.fl-stat-row {{
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 12px;
-    margin: 16px 0;
-}}
-.fl-stat {{
-    background: {BG_SECOND};
-    border: 1px solid rgba(148,163,184,0.1);
-    border-radius: 10px;
+    border: 1px solid {BORDER_S};
     padding: 14px 16px;
+    height: 100%;
 }}
-.fl-stat-label {{
-    font-size: 0.68rem; text-transform: uppercase;
-    letter-spacing: 0.1em; color: {TEXT_MUTED};
+.hud::before, .hud::after {{
+    content: ""; position: absolute; width: 10px; height: 10px;
+    border-color: {CYAN}; border-style: solid;
+}}
+.hud::before {{ top: -1px; left: -1px; border-width: 2px 0 0 2px; }}
+.hud::after  {{ top: -1px; right: -1px; border-width: 2px 2px 0 0; }}
+.hud > .hud-bl, .hud > .hud-br {{
+    content: ""; position: absolute; width: 10px; height: 10px;
+    border-color: {CYAN}; border-style: solid;
+}}
+.hud > .hud-bl {{ bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }}
+.hud > .hud-br {{ bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }}
+
+.hud-head {{
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 8px; margin-bottom: 10px;
+    border-bottom: 1px solid {BORDER_S};
     font-family: 'JetBrains Mono', monospace;
-    margin-bottom: 6px;
 }}
-.fl-stat-value {{
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.15rem; font-weight: 500; color: {TEXT};
+.hud-title {{ font-size: 0.68rem; letter-spacing: 0.16em; color: {CYAN}; text-transform: uppercase; font-weight: 500; }}
+.hud-title.blue {{ color: {BLUE}; }}
+.hud-title.violet {{ color: {VIOLET}; }}
+.hud-meta {{ font-size: 0.6rem; letter-spacing: 0.1em; color: {MUTED}; text-transform: uppercase; }}
+
+/* ---------- KPI STRIP ---------- */
+.kpi-row {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }}
+.kpi {{
+    background: {PANEL}; border: 1px solid {BORDER_S};
+    padding: 12px 14px;
+    position: relative; overflow: hidden;
 }}
-.fl-footer {{
-    margin-top: 60px; padding-top: 20px;
-    border-top: 1px solid rgba(148,163,184,0.1);
-    color: {TEXT_MUTED}; font-size: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+.kpi::before {{
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: {CYAN}; box-shadow: 0 0 8px {CYAN};
 }}
+.kpi-label {{ font-size: 0.6rem; letter-spacing: 0.14em; color: {MUTED}; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; }}
+.kpi-value {{ font-size: 1.45rem; color: {TEXT}; font-family: 'JetBrains Mono', monospace; font-weight: 500; letter-spacing: -0.02em; margin-top: 4px; }}
+.kpi-value.pos {{ color: {POS}; }}
+.kpi-value.neg {{ color: {NEG}; }}
+.kpi-sub {{ font-size: 0.62rem; color: {MUTED}; margin-top: 3px; font-family: 'JetBrains Mono', monospace; }}
+
+/* ---------- TABULAR DATA STRIP ---------- */
+.mc-table {{ width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; }}
+.mc-table th {{
+    text-align: left; color: {MUTED}; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.58rem;
+    padding: 6px 8px; border-bottom: 1px solid {BORDER_S};
+}}
+.mc-table td {{ padding: 8px 8px; border-bottom: 1px solid rgba(148,163,184,0.05); color: {TEXT}; }}
+.mc-table tr:last-child td {{ border-bottom: none; }}
+.mc-table td.pos {{ color: {POS}; }}
+.mc-table td.neg {{ color: {NEG}; }}
+.mc-table td.mono {{ color: {TEXT}; }}
+
+/* ---------- STATUS LIST ---------- */
+.status-list {{ display: flex; flex-direction: column; gap: 0; }}
+.status-item {{
+    display: grid; grid-template-columns: 10px 1fr auto;
+    gap: 10px; align-items: center;
+    padding: 9px 0; border-bottom: 1px solid rgba(148,163,184,0.06);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.66rem;
+}}
+.status-item:last-child {{ border-bottom: none; }}
+.status-dot {{ width: 6px; height: 6px; border-radius: 50%; }}
+.status-name {{ color: {MUTED}; letter-spacing: 0.04em; }}
+.status-val {{ color: {TEXT}; font-weight: 500; }}
+
+/* ---------- INTERPRETATION STRIP ---------- */
+.mc-note {{
+    background: linear-gradient(90deg, rgba(39,217,242,0.05) 0%, transparent 100%);
+    border-left: 2px solid {CYAN};
+    padding: 10px 14px;
+    font-size: 0.72rem; line-height: 1.6; color: {MUTED};
+    font-family: 'Inter', sans-serif;
+}}
+.mc-note strong {{ color: {TEXT}; font-weight: 600; }}
+.mc-warn {{
+    background: linear-gradient(90deg, rgba(251,113,133,0.06) 0%, transparent 100%);
+    border-left: 2px solid {NEG};
+    padding: 10px 14px; font-size: 0.72rem; line-height: 1.6; color: {MUTED};
+}}
+.mc-warn strong {{ color: {NEG}; }}
+
+/* ---------- PAGE NAV (horizontal tabs) ---------- */
+.mc-navwrap {{ display: flex; gap: 0; margin-bottom: 10px; border-bottom: 1px solid {BORDER_S}; }}
+.mc-navwrap .stRadio {{ flex: 1; }}
+.mc-navwrap [role="radiogroup"] {{ flex-direction: row !important; gap: 0 !important; }}
+.mc-navwrap [role="radiogroup"] label {{
+    background: transparent !important;
+    border: none !important; border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important; padding: 8px 18px !important;
+    margin-right: 0 !important; margin-bottom: 0 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 0.68rem !important; letter-spacing: 0.12em !important;
+    text-transform: uppercase !important; color: {MUTED} !important;
+}}
+.mc-navwrap [role="radiogroup"] label:has(input:checked) {{
+    color: {CYAN} !important;
+    border-bottom: 2px solid {CYAN} !important;
+    background: rgba(39,217,242,0.04) !important;
+}}
+
+/* Plotly transparent */
+.js-plotly-plot .plotly {{ background: transparent !important; }}
+
+/* Reduce Streamlit chrome */
+[data-testid="stHorizontalBlock"] {{ gap: 10px !important; }}
+.stPlotlyChart {{ margin: 0 !important; }}
 </style>
 """
-st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+st.markdown(CSS, unsafe_allow_html=True)
 
-# ---------------------------------------------------------------------------
+# ============================================================================
 # PLOTLY TEMPLATE
-# ---------------------------------------------------------------------------
-floodlens_template = go.layout.Template(
-    layout=go.Layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter, sans-serif", color=TEXT_MUTED, size=12),
-        title=dict(font=dict(size=14, color=TEXT), x=0, xanchor="left"),
-        xaxis=dict(
-            gridcolor="rgba(148,163,184,0.08)",
-            zerolinecolor="rgba(148,163,184,0.15)",
-            linecolor="rgba(148,163,184,0.15)",
-            tickfont=dict(color=TEXT_MUTED, size=11),
-            title=dict(font=dict(color=TEXT_MUTED, size=11)),
-        ),
-        yaxis=dict(
-            gridcolor="rgba(148,163,184,0.08)",
-            zerolinecolor="rgba(148,163,184,0.15)",
-            linecolor="rgba(148,163,184,0.15)",
-            tickfont=dict(color=TEXT_MUTED, size=11),
-            title=dict(font=dict(color=TEXT_MUTED, size=11)),
-        ),
-        colorway=[ACCENT, ACCENT_2, HIGHLIGHT, POS, NEG],
-        hoverlabel=dict(
-            bgcolor=PANEL, bordercolor=ACCENT,
-            font=dict(color=TEXT, family="Inter"),
-        ),
-        legend=dict(
-            bgcolor="rgba(0,0,0,0)",
-            bordercolor="rgba(148,163,184,0.15)",
-            borderwidth=1,
-            font=dict(color=TEXT_MUTED, size=11),
-        ),
-        margin=dict(l=10, r=10, t=45, b=10),
-    )
-)
-pio.templates["floodlens"] = floodlens_template
-pio.templates.default = "floodlens"
+# ============================================================================
+pio.templates["mc"] = go.layout.Template(layout=go.Layout(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(family="JetBrains Mono, monospace", color=MUTED, size=10),
+    title=dict(font=dict(size=11, color=TEXT), x=0.02, y=0.95),
+    xaxis=dict(gridcolor="rgba(148,163,184,0.06)", zerolinecolor="rgba(148,163,184,0.1)",
+               linecolor="rgba(148,163,184,0.1)", tickfont=dict(size=9)),
+    yaxis=dict(gridcolor="rgba(148,163,184,0.06)", zerolinecolor="rgba(148,163,184,0.1)",
+               linecolor="rgba(148,163,184,0.1)", tickfont=dict(size=9)),
+    colorway=[CYAN, BLUE, VIOLET, POS, NEG],
+    hoverlabel=dict(bgcolor=PANEL_2, bordercolor=CYAN, font=dict(color=TEXT, family="JetBrains Mono")),
+    legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color=MUTED, size=9)),
+    margin=dict(l=30, r=10, t=30, b=30),
+))
+pio.templates.default = "mc"
 
-# ---------------------------------------------------------------------------
-# HELPERS
-# ---------------------------------------------------------------------------
+# ============================================================================
+# DATA
+# ============================================================================
 @st.cache_data
-def read_csv(path):
-    return pd.read_csv(path)
-
+def read_csv(p): return pd.read_csv(p)
 
 @st.cache_data
-def read_boundary(path):
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def add_boundary_lines(fig, geojson, color="#27D9F2", width=1.2):
-    if geojson.get("type") == "FeatureCollection":
-        geometries = [f.get("geometry") for f in geojson.get("features", []) if f.get("geometry")]
-    elif geojson.get("type") == "Feature":
-        geometries = [geojson.get("geometry")]
-    else:
-        geometries = [geojson]
-
-    def add_ring(ring):
-        if not ring:
-            return
-        xs = [p[0] for p in ring]
-        ys = [p[1] for p in ring]
-        fig.add_trace(go.Scatter(
-            x=xs, y=ys, mode="lines",
-            line=dict(color=color, width=width),
-            hoverinfo="skip", showlegend=False,
-            name="Pakistan boundary",
-        ))
-
-    for geom in geometries:
-        if not geom:
-            continue
-        kind = geom.get("type")
-        coords = geom.get("coordinates", [])
-        if kind == "Polygon":
-            for ring in coords:
-                add_ring(ring)
-        elif kind == "MultiPolygon":
-            for poly in coords:
-                for ring in poly:
-                    add_ring(ring)
-        elif kind == "GeometryCollection":
-            for sub in geom.get("geometries", []):
-                sk = sub.get("type")
-                sc = sub.get("coordinates", [])
-                if sk == "Polygon":
-                    for ring in sc:
-                        add_ring(ring)
-                elif sk == "MultiPolygon":
-                    for poly in sc:
-                        for ring in poly:
-                            add_ring(ring)
-
+def read_geojson(p):
+    with open(p, encoding="utf-8") as f: return json.load(f)
 
 def load_monthly():
-    if not MONTHLY_FILE.exists():
-        return None
+    if not MONTHLY_FILE.exists(): return None
     df = read_csv(MONTHLY_FILE)
-    if "date" not in df or "monthly_rainfall_mm" not in df:
-        st.error("Monthly CSV needs 'date' and 'monthly_rainfall_mm' columns.")
-        return None
+    if "date" not in df or "monthly_rainfall_mm" not in df: return None
     df = df[["date", "monthly_rainfall_mm"]].copy()
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
     df["monthly_rainfall_mm"] = pd.to_numeric(df["monthly_rainfall_mm"], errors="coerce")
     return df.dropna().sort_values("date")
 
-
 def load_trends():
-    if not TRENDS_FILE.exists():
-        return None
+    if not TRENDS_FILE.exists(): return None
     df = read_csv(TRENDS_FILE)
     req = {"latitude", "longitude", "sen_slope_mm_year"}
-    if not req.issubset(df.columns):
-        st.error("Trend CSV must include latitude, longitude, sen_slope_mm_year.")
-        return None
-    for col in ["latitude", "longitude", "sen_slope_mm_year"]:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-    p_col = "adjusted_p" if "adjusted_p" in df.columns else "adjusted_p_value"
-    if p_col in df.columns:
-        df[p_col] = pd.to_numeric(df[p_col], errors="coerce")
-        df["significant_fdr"] = df[p_col] < 0.05
-    elif "significant" in df.columns:
-        df["significant_fdr"] = df["significant"].astype(str).str.lower().isin(["true", "1", "yes"])
+    if not req.issubset(df.columns): return None
+    for c in ["latitude", "longitude", "sen_slope_mm_year"]:
+        df[c] = pd.to_numeric(df[c], errors="coerce")
+    pcol = "adjusted_p" if "adjusted_p" in df.columns else "adjusted_p_value"
+    if pcol in df.columns:
+        df[pcol] = pd.to_numeric(df[pcol], errors="coerce")
+        df["significant_fdr"] = df[pcol] < 0.05
     else:
         df["significant_fdr"] = False
     return df.dropna(subset=["latitude", "longitude", "sen_slope_mm_year"])
 
+def add_boundary(fig, gj, color=BLUE, width=0.8):
+    if not gj: return
+    feats = gj.get("features", []) if gj.get("type") == "FeatureCollection" else [{"geometry": gj}]
+    for f in feats:
+        geom = f.get("geometry")
+        if not geom: continue
+        kind = geom.get("type"); coords = geom.get("coordinates", [])
+        polys = [coords] if kind == "Polygon" else coords if kind == "MultiPolygon" else []
+        for poly in polys:
+            for ring in poly:
+                xs = [p[0] for p in ring]; ys = [p[1] for p in ring]
+                fig.add_trace(go.Scatter(
+                    x=xs, y=ys, mode="lines",
+                    line=dict(color=color, width=width),
+                    hoverinfo="skip", showlegend=False,
+                ))
 
-# ---------------------------------------------------------------------------
-# PLOTLY FIGURE BUILDERS
-# ---------------------------------------------------------------------------
-def kpi(label, value, sub=None, tone="neutral"):
-    cls = f"fl-kpi-value {tone}"
-    sub_html = f'<div class="fl-kpi-sub">{sub}</div>' if sub else ""
-    return f"""
-    <div class="fl-kpi">
-        <div class="fl-kpi-label">{label}</div>
-        <div class="{cls}">{value}</div>
-        {sub_html}
-    </div>
-    """
-
-
-def annual_figure(annual):
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=annual["year"], y=annual["annual_rainfall_mm"],
-        mode="lines+markers",
-        line=dict(color=ACCENT, width=2.2, shape="spline", smoothing=0.4),
-        marker=dict(size=6, color=ACCENT, line=dict(color=BG_MAIN, width=1)),
-        fill="tozeroy",
-        fillcolor="rgba(39,217,242,0.07)",
-        hovertemplate="<b>%{x}</b><br>Annual rainfall: %{y:.1f} mm<extra></extra>",
-    ))
-    # Simple linear trend overlay
-    if len(annual) > 2:
-        z = np.polyfit(annual["year"], annual["annual_rainfall_mm"], 1)
-        trend_y = np.polyval(z, annual["year"])
-        fig.add_trace(go.Scatter(
-            x=annual["year"], y=trend_y,
-            mode="lines",
-            line=dict(color=HIGHLIGHT, width=1.4, dash="dot"),
-            name="Linear trend",
-            hoverinfo="skip",
-        ))
-    fig.update_layout(
-        height=380,
-        title="Annual rainfall total — Pakistan (2001–2024)",
-        xaxis_title="Year",
-        yaxis_title="Annual rainfall (mm)",
-        showlegend=False,
-    )
-    return fig
-
-
-def make_trend_map(trends, boundary, mode):
-    plot_df = trends.copy()
-    if mode == "significance":
-        plot_df["status"] = np.where(
-            plot_df["significant_fdr"], "Significant (FDR)", "Not significant (FDR)"
-        )
-        fig = px.scatter(
-            plot_df, x="longitude", y="latitude", color="status",
-            color_discrete_map={
-                "Significant (FDR)": POS,
-                "Not significant (FDR)": NEUTRAL,
-            },
-            hover_data={
-                "sen_slope_mm_year": ":.2f",
-                "latitude": ":.2f",
-                "longitude": ":.2f",
-            },
-        )
-    else:
-        # Diverging scale centered at zero, tuned to the theme
-        fig = px.scatter(
-            plot_df, x="longitude", y="latitude",
-            color="sen_slope_mm_year",
-            color_continuous_scale=[
-                [0.0, NEG],
-                [0.35, "#c084a0"],
-                [0.5, NEUTRAL],
-                [0.65, "#5a8fd4"],
-                [1.0, ACCENT],
-            ],
-            range_color=(-8, 16),
-            hover_data={
-                "sen_slope_mm_year": ":.2f",
-                "latitude": ":.2f",
-                "longitude": ":.2f",
-                "significant_fdr": True,
-            },
-        )
-    if boundary is not None:
-        add_boundary_lines(fig, boundary, color="#648CFF", width=1.0)
-    fig.update_traces(marker=dict(size=5.5, opacity=0.9, line=dict(width=0)))
-    fig.update_layout(
-        height=680,
-        margin=dict(l=10, r=10, t=30, b=10),
-        xaxis=dict(range=[60, 78], title="Longitude", scaleanchor="y", scaleratio=1),
-        yaxis=dict(range=[22, 38], title="Latitude"),
-        legend=dict(orientation="h", y=1.03, x=0),
-        coloraxis_colorbar=dict(
-            title=dict(text="mm/yr", font=dict(size=11)),
-            thickness=10, len=0.6,
-            tickfont=dict(size=10),
-        ),
-    )
-    return fig
-
-
-# ---------------------------------------------------------------------------
-# HEADER + SIDEBAR
-# ---------------------------------------------------------------------------
-def render_header():
+# ============================================================================
+# COMPONENTS
+# ============================================================================
+def hud_open(title, meta="", accent="cyan"):
+    cls = {"cyan": "", "blue": " blue", "violet": " violet"}.get(accent, "")
     st.markdown(f"""
-    <div class="fl-header">
-        <div class="fl-brand">
-            <div class="fl-logo">FL</div>
+    <div class="hud">
+        <span class="hud-bl"></span><span class="hud-br"></span>
+        <div class="hud-head">
+            <div class="hud-title{cls}">{title}</div>
+            <div class="hud-meta">{meta}</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+def hud_close():
+    st.markdown("</div>", unsafe_allow_html=True)
+
+def topbar():
+    st.markdown(f"""
+    <div class="mc-topbar">
+        <div class="mc-brand">
+            <div class="mc-logo">FL</div>
             <div>
-                <div class="fl-title">FloodLens AI</div>
-                <div class="fl-sub">Pakistan Earth-System Intelligence Platform</div>
+                <div class="mc-brand-text">FLOODLENS AI</div>
+                <div class="mc-brand-sub">Earth-System Intelligence · Pakistan</div>
             </div>
         </div>
-        <div class="fl-header-badges">
-            <div class="fl-badge">
-                <span class="fl-badge-dot accent"></span>
-                NASA GPM IMERG · SRTM
-            </div>
-            <div class="fl-badge">2001–2024</div>
-            <div class="fl-badge">
-                <span class="fl-badge-dot"></span>
-                Analysis engine ready
-            </div>
+        <div class="mc-telemetry">
+            <span>MODE <b>ANALYSIS</b></span>
+            <span>PERIOD <b>2001-2024</b></span>
+            <span>OBS <b>288 MO</b></span>
+            <span>GRID <b>7335 CELLS</b></span>
+        </div>
+        <div class="mc-badges">
+            <div class="mc-chip"><span class="mc-dot cyan"></span>GPM IMERG</div>
+            <div class="mc-chip"><span class="mc-dot"></span>SRTM V3</div>
+            <div class="mc-chip">v1.0</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-
-def render_sidebar():
-    with st.sidebar:
-        st.markdown(f"""
-        <div style="font-family:'JetBrains Mono',monospace; font-size:0.68rem;
-                    letter-spacing:0.16em; color:{ACCENT}; text-transform:uppercase;
-                    margin-bottom:14px;">Control Panel</div>
-        """, unsafe_allow_html=True)
-
-        page = st.radio(
-            "Section",
-            [
-                "01 · National Overview",
-                "02 · Rainfall Explorer",
-                "03 · Spatial Trend Intelligence",
-                "04 · Terrain Explorer",
-                "05 · Methodology & Data",
-            ],
-            label_visibility="collapsed",
-        )
-
-        st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
-
-        st.markdown(f"""
-        <div style="border-top:1px solid rgba(148,163,184,0.12); padding-top:16px;
-                    font-family:'JetBrains Mono',monospace; font-size:0.7rem;
-                    color:{TEXT_MUTED}; line-height:1.9;">
-            <div>STUDY AREA &nbsp;·&nbsp; Pakistan</div>
-            <div>PERIOD &nbsp;·&nbsp; 2001 – 2024</div>
-            <div>RAINFALL &nbsp;·&nbsp; GPM IMERG V07</div>
-            <div>TERRAIN &nbsp;·&nbsp; SRTMGL1</div>
-        </div>
-        """, unsafe_allow_html=True)
+def nav():
+    st.markdown('<div class="mc-navwrap">', unsafe_allow_html=True)
+    page = st.radio(
+        "nav", ["OVERVIEW", "RAINFALL", "SPATIAL TREND", "TERRAIN", "METHODOLOGY"],
+        horizontal=True, label_visibility="collapsed",
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
     return page
 
-
-def render_footer():
-    st.markdown(f"""
-    <div class="fl-footer">
-        <div>FloodLens AI · Earth-System Intelligence</div>
-        <div>Data: NASA GPM IMERG · USGS SRTM</div>
-        <div>Static historical analysis · not a forecast</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ---------------------------------------------------------------------------
-# LOAD DATA
-# ---------------------------------------------------------------------------
+# ============================================================================
+# LOAD
+# ============================================================================
 monthly = load_monthly()
 trends = load_trends()
-boundary = read_boundary(BOUNDARY_FILE) if BOUNDARY_FILE.exists() else None
+boundary = read_geojson(BOUNDARY_FILE) if BOUNDARY_FILE.exists() else None
 
-# ---------------------------------------------------------------------------
-# SHELL
-# ---------------------------------------------------------------------------
-render_header()
-page = render_sidebar()
+topbar()
+page = nav()
 
 
-# ===========================================================================
-# PAGE 1 — NATIONAL OVERVIEW
-# ===========================================================================
-if page.startswith("01"):
-    st.markdown('<div class="fl-eyebrow">National Overview · 01</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="fl-h1">Understanding Pakistan\'s '
-        '<span class="accent">Changing Earth System</span></div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        '<div class="fl-lead">A 24-year retrospective of rainfall behaviour and terrain context '
-        'across Pakistan, derived from NASA GPM IMERG monthly precipitation and SRTM elevation. '
-        'This dashboard surfaces spatial and temporal trends — it is not a flood forecast.</div>',
-        unsafe_allow_html=True,
-    )
-
-    # --- KPI row ---
+# ============================================================================
+# PAGE: OVERVIEW
+# ============================================================================
+if page == "OVERVIEW":
     n_obs = len(monthly) if monthly is not None else 0
     n_cells = len(trends) if trends is not None else 0
-    k1, k2, k3, k4 = st.columns(4)
-    with k1:
-        st.markdown(kpi("Analysis period", "2001–2024", "24 hydrological years"), unsafe_allow_html=True)
-    with k2:
-        st.markdown(kpi("Monthly observations", f"{n_obs:,}" if n_obs else "—", "National aggregate"), unsafe_allow_html=True)
-    with k3:
-        st.markdown(kpi("Spatial grid cells", f"{n_cells:,}" if n_cells else "—", "Pixel-level trend tests"), unsafe_allow_html=True)
-    with k4:
-        st.markdown(kpi("National trend", "Increasing", "Mann–Kendall · Hamed–Rao", tone="pos"), unsafe_allow_html=True)
+    n_sig = int(trends["significant_fdr"].sum()) if trends is not None else 0
 
-    # --- National Mann-Kendall result ---
-    st.markdown('<div class="fl-section-title">National Statistical Result</div>', unsafe_allow_html=True)
+    # ---- KPI strip ----
     st.markdown(f"""
-    <div class="fl-stat-row">
-        <div class="fl-stat">
-            <div class="fl-stat-label">Test</div>
-            <div class="fl-stat-value">Mann–Kendall</div>
-        </div>
-        <div class="fl-stat">
-            <div class="fl-stat-label">Trend direction</div>
-            <div class="fl-stat-value" style="color:{POS}">Increasing</div>
-        </div>
-        <div class="fl-stat">
-            <div class="fl-stat-label">Sen's slope</div>
-            <div class="fl-stat-value">+5.231 mm / yr</div>
-        </div>
-        <div class="fl-stat">
-            <div class="fl-stat-label">Hamed–Rao p-value</div>
-            <div class="fl-stat-value">0.035</div>
-        </div>
-        <div class="fl-stat">
-            <div class="fl-stat-label">Significance (α = 0.05)</div>
-            <div class="fl-stat-value" style="color:{POS}">Pass</div>
-        </div>
+    <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label">Analysis Period</div>
+            <div class="kpi-value">2001–2024</div>
+            <div class="kpi-sub">24 hydrological years</div></div>
+        <div class="kpi"><div class="kpi-label">Monthly Obs</div>
+            <div class="kpi-value">{n_obs:,}</div>
+            <div class="kpi-sub">national aggregate</div></div>
+        <div class="kpi"><div class="kpi-label">Grid Cells</div>
+            <div class="kpi-value">{n_cells:,}</div>
+            <div class="kpi-sub">pixel-level tests</div></div>
+        <div class="kpi"><div class="kpi-label">National Trend</div>
+            <div class="kpi-value pos">INCREASING</div>
+            <div class="kpi-sub">p = 0.035</div></div>
     </div>
     """, unsafe_allow_html=True)
 
-    # --- Annual rainfall chart ---
+    # ---- MAIN 3-COLUMN GRID ----
+    col_left, col_center, col_right = st.columns([1.05, 2.0, 1.05], gap="small")
+
+    # ---------- LEFT: result table + status ----------
+    with col_left:
+        st.markdown(f"""
+        <div class="hud">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head">
+                <div class="hud-title">National Mann–Kendall</div>
+                <div class="hud-meta">SIGNAL</div>
+            </div>
+            <table class="mc-table">
+                <tr><th>Param</th><th>Value</th></tr>
+                <tr><td>Direction</td><td class="pos">INCREASING</td></tr>
+                <tr><td>Sen's Slope</td><td class="mono">+5.231 mm/yr</td></tr>
+                <tr><td>Hamed–Rao p</td><td class="mono">0.035</td></tr>
+                <tr><td>α threshold</td><td class="mono">0.050</td></tr>
+                <tr><td>Significance</td><td class="pos">PASS</td></tr>
+                <tr><td>Test Type</td><td class="mono">MK + HR</td></tr>
+            </table>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div class="hud">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head">
+                <div class="hud-title blue">Data Sources</div>
+                <div class="hud-meta">2 ACTIVE</div>
+            </div>
+            <div class="status-list">
+                <div class="status-item">
+                    <span class="status-dot" style="background:{POS};box-shadow:0 0 6px {POS}"></span>
+                    <span class="status-name">GPM IMERG V07</span>
+                    <span class="status-val">MONTHLY</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" style="background:{POS};box-shadow:0 0 6px {POS}"></span>
+                    <span class="status-name">SRTMGL1 Elevation</span>
+                    <span class="status-val">STATIC</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" style="background:{NEUTRAL}"></span>
+                    <span class="status-name">Boundary</span>
+                    <span class="status-val">GEOJSON</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div class="hud">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head">
+                <div class="hud-title violet">FDR Correction</div>
+                <div class="hud-meta">BH · α=0.05</div>
+            </div>
+            <div class="status-list">
+                <div class="status-item">
+                    <span class="status-dot" style="background:{MUTED}"></span>
+                    <span class="status-name">Tested</span>
+                    <span class="status-val">{n_cells:,}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" style="background:{NEG};box-shadow:0 0 6px {NEG}"></span>
+                    <span class="status-name">Significant</span>
+                    <span class="status-val" style="color:{NEG}">{n_sig:,}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" style="background:{NEUTRAL}"></span>
+                    <span class="status-name">Not Significant</span>
+                    <span class="status-val">{n_cells-n_sig:,}</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # ---------- CENTER: hero map ----------
+    with col_center:
+        st.markdown(f"""
+        <div class="hud" style="padding-bottom:6px;">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head">
+                <div class="hud-title">Spatial Sen's Slope · Pakistan</div>
+                <div class="hud-meta">LON 60–78 · LAT 22–38 · 7335 PX</div>
+            </div>
+        """, unsafe_allow_html=True)
+        if trends is not None:
+            fig = px.scatter(
+                trends, x="longitude", y="latitude",
+                color="sen_slope_mm_year",
+                color_continuous_scale=[
+                    [0.0, NEG], [0.35, "#c084a0"], [0.5, NEUTRAL],
+                    [0.65, BLUE], [1.0, CYAN],
+                ],
+                range_color=(-8, 16),
+                hover_data={"sen_slope_mm_year": ":.2f", "latitude": ":.2f", "longitude": ":.2f"},
+            )
+            add_boundary(fig, boundary)
+            fig.update_traces(marker=dict(size=4, opacity=0.9))
+            fig.update_layout(
+                height=470,
+                xaxis=dict(range=[60, 78], title="", scaleanchor="y", scaleratio=1, showticklabels=True),
+                yaxis=dict(range=[22, 38], title=""),
+                coloraxis_colorbar=dict(
+                    title=dict(text="mm/yr", font=dict(size=9, color=MUTED)),
+                    thickness=8, len=0.55, x=1.02,
+                    tickfont=dict(size=8),
+                    outlinewidth=0,
+                ),
+                margin=dict(l=30, r=10, t=10, b=30),
+            )
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+        else:
+            st.info("Add pixel trends CSV to data/")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # ---------- RIGHT: vertical panels ----------
+    with col_right:
+        st.markdown(f"""
+        <div class="hud">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head">
+                <div class="hud-title">Terrain Context</div>
+                <div class="hud-meta">SRTM</div>
+            </div>
+            <div class="status-list">
+                <div class="status-item">
+                    <span class="status-dot" style="background:{CYAN}"></span>
+                    <span class="status-name">Elevation Range</span>
+                    <span class="status-val">0–8600 m</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" style="background:{BLUE}"></span>
+                    <span class="status-name">Resolution</span>
+                    <span class="status-val">1 arc-sec</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" style="background:{NEUTRAL}"></span>
+                    <span class="status-name">Variable</span>
+                    <span class="status-val">STATIC</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div class="hud">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head">
+                <div class="hud-title blue">Study Region</div>
+                <div class="hud-meta">PAKISTAN</div>
+            </div>
+            <div class="status-list">
+                <div class="status-item">
+                    <span class="status-dot" style="background:{CYAN}"></span>
+                    <span class="status-name">Bounding Box</span>
+                    <span class="status-val">60–78°E</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" style="background:{CYAN}"></span>
+                    <span class="status-name">Latitude Span</span>
+                    <span class="status-val">22–38°N</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" style="background:{CYAN}"></span>
+                    <span class="status-name">Grid Cells</span>
+                    <span class="status-val">{n_cells:,}</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div class="hud">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head">
+                <div class="hud-title violet">System Status</div>
+                <div class="hud-meta">READY</div>
+            </div>
+            <div class="status-list">
+                <div class="status-item">
+                    <span class="status-dot" style="background:{POS};box-shadow:0 0 6px {POS}"></span>
+                    <span class="status-name">Analysis Engine</span>
+                    <span class="status-val">ONLINE</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" style="background:{POS};box-shadow:0 0 6px {POS}"></span>
+                    <span class="status-name">Data Cache</span>
+                    <span class="status-val">LOADED</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" style="background:{VIOLET};box-shadow:0 0 6px {VIOLET}"></span>
+                    <span class="status-name">Version</span>
+                    <span class="status-val">v1.0</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # ---- BOTTOM ROW: 3 micro-charts ----
     if monthly is not None:
         m = monthly.copy()
         m["year"] = m["date"].dt.year
-        annual = (
-            m.groupby("year", as_index=False)["monthly_rainfall_mm"].sum()
-            .rename(columns={"monthly_rainfall_mm": "annual_rainfall_mm"})
-        )
-        st.markdown('<div class="fl-section-title">Annual Rainfall Trajectory</div>', unsafe_allow_html=True)
-        st.plotly_chart(annual_figure(annual), use_container_width=True)
+        m["month"] = m["date"].dt.month
+        annual = m.groupby("year", as_index=False)["monthly_rainfall_mm"].sum()
 
-    # --- Spatial preview ---
-    if trends is not None:
-        st.markdown('<div class="fl-section-title">Spatial Trend Preview</div>', unsafe_allow_html=True)
-        preview = trends.sample(min(3000, len(trends)), random_state=42) if len(trends) > 3000 else trends
-        st.plotly_chart(make_trend_map(preview, boundary, "slope"), use_container_width=True)
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+        c1, c2, c3 = st.columns(3, gap="small")
 
-    # --- Interpretation ---
-    st.markdown('<div class="fl-section-title">Scientific Interpretation</div>', unsafe_allow_html=True)
+        with c1:
+            st.markdown(f"""
+            <div class="hud" style="padding-bottom:0;">
+                <span class="hud-bl"></span><span class="hud-br"></span>
+                <div class="hud-head">
+                    <div class="hud-title">Annual Series</div>
+                    <div class="hud-meta">mm/yr</div>
+                </div>
+            """, unsafe_allow_html=True)
+            f1 = go.Figure(go.Scatter(
+                x=annual["year"], y=annual["monthly_rainfall_mm"],
+                mode="lines+markers",
+                line=dict(color=CYAN, width=1.6),
+                marker=dict(size=3, color=CYAN),
+                fill="tozeroy", fillcolor="rgba(39,217,242,0.08)",
+                hovertemplate="%{x} · %{y:.0f} mm<extra></extra>",
+            ))
+            f1.update_layout(height=180, margin=dict(l=30, r=6, t=6, b=20), showlegend=False)
+            st.plotly_chart(f1, use_container_width=True, config={"displayModeBar": False})
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with c2:
+            st.markdown(f"""
+            <div class="hud" style="padding-bottom:0;">
+                <span class="hud-bl"></span><span class="hud-br"></span>
+                <div class="hud-head">
+                    <div class="hud-title blue">Monthly Heatmap</div>
+                    <div class="hud-meta">YEAR × MONTH</div>
+                </div>
+            """, unsafe_allow_html=True)
+            heat = m.pivot_table(index="year", columns="month", values="monthly_rainfall_mm", aggfunc="mean")
+            f2 = px.imshow(
+                heat, aspect="auto", origin="lower",
+                color_continuous_scale=[[0, BG_2], [0.5, BLUE], [1, CYAN]],
+            )
+            f2.update_layout(
+                height=180, margin=dict(l=30, r=6, t=6, b=20),
+                coloraxis_showscale=False,
+                xaxis=dict(showticklabels=True, tickfont=dict(size=7)),
+                yaxis=dict(showticklabels=True, tickfont=dict(size=7)),
+            )
+            st.plotly_chart(f2, use_container_width=True, config={"displayModeBar": False})
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with c3:
+            st.markdown(f"""
+            <div class="hud" style="padding-bottom:0;">
+                <span class="hud-bl"></span><span class="hud-br"></span>
+                <div class="hud-head">
+                    <div class="hud-title violet">Anomaly Signal</div>
+                    <div class="hud-meta">VS 2001–2020</div>
+                </div>
+            """, unsafe_allow_html=True)
+            base = m[m["year"].between(2001, 2020)]
+            clim = base.groupby("month")["monthly_rainfall_mm"].mean()
+            m["anom"] = m["monthly_rainfall_mm"] - m["month"].map(clim)
+            colors = np.where(m["anom"] >= 0, POS, NEG)
+            f3 = go.Figure(go.Bar(
+                x=m["date"], y=m["anom"],
+                marker_color=colors, marker_line_width=0,
+                hovertemplate="%{x|%b %Y} · %{y:.1f} mm<extra></extra>",
+            ))
+            f3.update_layout(height=180, margin=dict(l=30, r=6, t=6, b=20), showlegend=False)
+            st.plotly_chart(f3, use_container_width=True, config={"displayModeBar": False})
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    # ---- Interpretation ----
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
     st.markdown(f"""
-    <div class="fl-interpretation">
-        <strong>National aggregate signal.</strong> The national mean monthly rainfall series shows a
-        statistically significant increasing trend (Mann–Kendall with Hamed–Rao correction for
-        autocorrelation, p = 0.035), with a Sen's slope of approximately +5.2 mm/year. This describes
-        the <em>aggregate</em> rainfall regime across the analysed domain — it does not imply that
-        every region is wetting, nor does it constitute a flood forecast.
-        <br><br>
-        <strong>Pixel-level vs national.</strong> Individual grid-cell Mann–Kendall tests were performed
-        separately and corrected for multiple comparisons using Benjamini–Hochberg FDR. The national
-        aggregate and the pixel-level question are distinct statistical inferences — see the Spatial
-        Trend Intelligence tab for the pixel-level outcome.
+    <div class="hud">
+        <span class="hud-bl"></span><span class="hud-br"></span>
+        <div class="hud-head">
+            <div class="hud-title">Scientific Interpretation</div>
+            <div class="hud-meta">READ</div>
+        </div>
+        <div class="mc-note">
+            <strong>National aggregate:</strong> The national mean monthly series exhibits a
+            statistically significant increasing trend (Mann–Kendall with Hamed–Rao correction,
+            p = 0.035; Sen's slope ≈ +5.23 mm/yr). This describes the <em>aggregate</em> rainfall
+            regime across the study domain — not every pixel wets, and this is not a flood forecast.
+        </div>
+        <div style="height:8px"></div>
+        <div class="mc-warn">
+            <strong>Pixel-level:</strong> Of {n_cells:,} grid cells tested with pixel-level
+            Mann–Kendall, <strong>0 passed</strong> Benjamini–Hochberg FDR correction. Pixel slopes
+            are estimates with wide uncertainty — do not describe any individual pixel as an
+            increasing or decreasing rainfall trend.
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
 
-# ===========================================================================
-# PAGE 2 — RAINFALL EXPLORER
-# ===========================================================================
-elif page.startswith("02"):
-    st.markdown('<div class="fl-eyebrow">Rainfall Explorer · 02</div>', unsafe_allow_html=True)
-    st.markdown('<div class="fl-h1">Monthly Rainfall Workspace</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="fl-lead">Explore Pakistan\'s monthly rainfall record through time, '
-        'with anomalies computed against a 2001–2020 climatological baseline.</div>',
-        unsafe_allow_html=True,
-    )
+# ============================================================================
+# PAGE: RAINFALL
+# ============================================================================
+elif page == "RAINFALL":
+    st.markdown(f"""
+    <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label">Monthly Records</div>
+            <div class="kpi-value">{(len(monthly) if monthly is not None else 0):,}</div>
+            <div class="kpi-sub">2001-01 → 2024-12</div></div>
+        <div class="kpi"><div class="kpi-label">Mean Annual</div>
+            <div class="kpi-value">{("—" if monthly is None else f"{monthly.groupby(monthly['date'].dt.year)['monthly_rainfall_mm'].sum().mean():.0f}")}</div>
+            <div class="kpi-sub">mm / year</div></div>
+        <div class="kpi"><div class="kpi-label">Wettest Month</div>
+            <div class="kpi-value">{("—" if monthly is None else f"{monthly['monthly_rainfall_mm'].max():.0f}")}</div>
+            <div class="kpi-sub">mm</div></div>
+        <div class="kpi"><div class="kpi-label">Driest Month</div>
+            <div class="kpi-value">{("—" if monthly is None else f"{monthly['monthly_rainfall_mm'].min():.1f}")}</div>
+            <div class="kpi-sub">mm</div></div>
+    </div>
+    """, unsafe_allow_html=True)
 
     if monthly is None:
-        st.info("Add the monthly rainfall CSV to `data/` to populate this page.")
+        st.info("Add monthly CSV to data/.")
     else:
         m = monthly.copy()
         m["year"] = m["date"].dt.year
         m["month"] = m["date"].dt.month
-        min_year, max_year = int(m["year"].min()), int(m["year"].max())
 
-        c1, c2 = st.columns([1, 2])
+        c1, c2 = st.columns([1, 4], gap="small")
         with c1:
-            selected_years = st.slider("Year range", min_year, max_year, (min_year, max_year))
-        subset = m[m["year"].between(*selected_years)]
+            st.markdown(f"""
+            <div class="hud">
+                <span class="hud-bl"></span><span class="hud-br"></span>
+                <div class="hud-head">
+                    <div class="hud-title">Filter Range</div>
+                    <div class="hud-meta">YEAR</div>
+                </div>
+            """, unsafe_allow_html=True)
+            yr = st.slider("Year", int(m["year"].min()), int(m["year"].max()), (int(m["year"].min()), int(m["year"].max())), label_visibility="collapsed")
+            st.markdown("</div>", unsafe_allow_html=True)
+        sub = m[m["year"].between(*yr)]
 
-        # Monthly series
-        st.markdown('<div class="fl-section-title">Monthly Rainfall Series</div>', unsafe_allow_html=True)
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=subset["date"], y=subset["monthly_rainfall_mm"],
-            mode="lines",
-            line=dict(color=ACCENT, width=1.4),
-            fill="tozeroy", fillcolor="rgba(39,217,242,0.06)",
-            hovertemplate="<b>%{x|%b %Y}</b><br>%{y:.1f} mm<extra></extra>",
-        ))
-        fig.update_layout(height=360, xaxis_title="Date", yaxis_title="Rainfall (mm)")
-        st.plotly_chart(fig, use_container_width=True)
+        with c2:
+            st.markdown(f"""
+            <div class="hud" style="padding-bottom:0;">
+                <span class="hud-bl"></span><span class="hud-br"></span>
+                <div class="hud-head">
+                    <div class="hud-title">Monthly Rainfall Signal</div>
+                    <div class="hud-meta">{yr[0]} – {yr[1]}</div>
+                </div>
+            """, unsafe_allow_html=True)
+            f = go.Figure(go.Scatter(
+                x=sub["date"], y=sub["monthly_rainfall_mm"],
+                mode="lines", line=dict(color=CYAN, width=1.2),
+                fill="tozeroy", fillcolor="rgba(39,217,242,0.08)",
+                hovertemplate="%{x|%b %Y} · %{y:.1f} mm<extra></extra>",
+            ))
+            f.update_layout(height=260, margin=dict(l=40, r=10, t=10, b=30))
+            st.plotly_chart(f, use_container_width=True, config={"displayModeBar": False})
+            st.markdown("</div>", unsafe_allow_html=True)
 
-        # Annual aggregation
-        st.markdown('<div class="fl-section-title">Annual Aggregation</div>', unsafe_allow_html=True)
-        annual = (
-            subset.groupby("year", as_index=False)["monthly_rainfall_mm"].sum()
-            .rename(columns={"monthly_rainfall_mm": "annual_rainfall_mm"})
-        )
-        fig_a = go.Figure()
-        fig_a.add_trace(go.Bar(
-            x=annual["year"], y=annual["annual_rainfall_mm"],
-            marker_color=ACCENT_2, marker_line_width=0,
-            hovertemplate="<b>%{x}</b><br>%{y:.1f} mm<extra></extra>",
-        ))
-        fig_a.update_layout(height=340, xaxis_title="Year", yaxis_title="Annual rainfall (mm)")
-        st.plotly_chart(fig_a, use_container_width=True)
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+        c3, c4 = st.columns([1, 1], gap="small")
 
-        # Heatmap
-        st.markdown('<div class="fl-section-title">Monthly Distribution Heatmap</div>', unsafe_allow_html=True)
-        heat = subset.pivot_table(index="year", columns="month", values="monthly_rainfall_mm", aggfunc="mean")
-        fig_h = px.imshow(
-            heat, aspect="auto", origin="lower",
-            color_continuous_scale=[[0, BG_SECOND], [0.5, ACCENT_2], [1, ACCENT]],
-            labels=dict(x="Month", y="Year", color="mm"),
-        )
-        fig_h.update_layout(height=380, coloraxis_colorbar=dict(thickness=10, len=0.6))
-        st.plotly_chart(fig_h, use_container_width=True)
+        with c3:
+            st.markdown(f"""
+            <div class="hud" style="padding-bottom:0;">
+                <span class="hud-bl"></span><span class="hud-br"></span>
+                <div class="hud-head">
+                    <div class="hud-title blue">Annual Aggregation</div>
+                    <div class="hud-meta">mm</div>
+                </div>
+            """, unsafe_allow_html=True)
+            ann = sub.groupby("year", as_index=False)["monthly_rainfall_mm"].sum()
+            fa = go.Figure(go.Bar(
+                x=ann["year"], y=ann["monthly_rainfall_mm"],
+                marker_color=BLUE, marker_line_width=0,
+                hovertemplate="%{x} · %{y:.0f} mm<extra></extra>",
+            ))
+            fa.update_layout(height=240, margin=dict(l=40, r=10, t=10, b=30))
+            st.plotly_chart(fa, use_container_width=True, config={"displayModeBar": False})
+            st.markdown("</div>", unsafe_allow_html=True)
 
-        # Anomaly
-        st.markdown('<div class="fl-section-title">Monthly Anomalies · Baseline 2001–2020</div>', unsafe_allow_html=True)
-        baseline = m[m["year"].between(2001, 2020)].copy()
-        climatology = baseline.groupby("month")["monthly_rainfall_mm"].mean()
-        m["anomaly_mm"] = m["monthly_rainfall_mm"] - m["month"].map(climatology)
-        anom = m[m["year"].between(*selected_years)]
-        colors = np.where(anom["anomaly_mm"] >= 0, POS, NEG)
-        fig_an = go.Figure()
-        fig_an.add_trace(go.Bar(
-            x=anom["date"], y=anom["anomaly_mm"],
-            marker_color=colors, marker_line_width=0,
-            hovertemplate="<b>%{x|%b %Y}</b><br>Anomaly: %{y:.1f} mm<extra></extra>",
-        ))
-        fig_an.update_layout(height=340, xaxis_title="Date", yaxis_title="Anomaly (mm)")
-        st.plotly_chart(fig_an, use_container_width=True)
-
-        st.markdown(f"""
-        <div class="fl-interpretation">
-            <strong>Reading the anomaly chart.</strong> Bars above zero indicate months wetter than the
-            2001–2020 calendar-month mean; bars below zero are drier. Positive anomalies in individual
-            months do not by themselves establish a trend — the national Mann–Kendall result is the
-            statistically tested summary.
-        </div>
-        """, unsafe_allow_html=True)
+        with c4:
+            st.markdown(f"""
+            <div class="hud" style="padding-bottom:0;">
+                <span class="hud-bl"></span><span class="hud-br"></span>
+                <div class="hud-head">
+                    <div class="hud-title violet">Anomaly vs 2001–2020</div>
+                    <div class="hud-meta">± mm</div>
+                </div>
+            """, unsafe_allow_html=True)
+            base = m[m["year"].between(2001, 2020)]
+            clim = base.groupby("month")["monthly_rainfall_mm"].mean()
+            sub2 = sub.copy()
+            sub2["anom"] = sub2["monthly_rainfall_mm"] - sub2["month"].map(clim)
+            colors = np.where(sub2["anom"] >= 0, POS, NEG)
+            fan = go.Figure(go.Bar(
+                x=sub2["date"], y=sub2["anom"],
+                marker_color=colors, marker_line_width=0,
+                hovertemplate="%{x|%b %Y} · %{y:.1f} mm<extra></extra>",
+            ))
+            fan.update_layout(height=240, margin=dict(l=40, r=10, t=10, b=30))
+            st.plotly_chart(fan, use_container_width=True, config={"displayModeBar": False})
+            st.markdown("</div>", unsafe_allow_html=True)
 
 
-# ===========================================================================
-# PAGE 3 — SPATIAL TREND INTELLIGENCE
-# ===========================================================================
-elif page.startswith("03"):
-    st.markdown('<div class="fl-eyebrow">Spatial Trend Intelligence · 03</div>', unsafe_allow_html=True)
-    st.markdown('<div class="fl-h1">Pixel-Level Trend Analysis</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="fl-lead">Sen\'s slope estimates per grid cell, with a separate statistical '
-        'significance layer derived from pixel-level Mann–Kendall tests after Benjamini–Hochberg '
-        'false-discovery-rate correction.</div>',
-        unsafe_allow_html=True,
-    )
+# ============================================================================
+# PAGE: SPATIAL
+# ============================================================================
+elif page == "SPATIAL TREND":
+    n_cells = len(trends) if trends is not None else 0
+    n_sig = int(trends["significant_fdr"].sum()) if trends is not None else 0
+
+    st.markdown(f"""
+    <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label">Pixels Tested</div>
+            <div class="kpi-value">{n_cells:,}</div>
+            <div class="kpi-sub">MK per cell</div></div>
+        <div class="kpi"><div class="kpi-label">Significant (FDR)</div>
+            <div class="kpi-value neg">{n_sig:,}</div>
+            <div class="kpi-sub">α = 0.05</div></div>
+        <div class="kpi"><div class="kpi-label">Not Significant</div>
+            <div class="kpi-value">{n_cells - n_sig:,}</div>
+            <div class="kpi-sub">FDR-corrected</div></div>
+        <div class="kpi"><div class="kpi-label">Correction</div>
+            <div class="kpi-value" style="font-size:1rem;">BENJAMINI</div>
+            <div class="kpi-sub">HOCHBERG</div></div>
+    </div>
+    """, unsafe_allow_html=True)
 
     if trends is None:
-        st.info("Add `FloodLens_Pakistan_Pixel_Trends_2001_2024.csv` to `data/`.")
+        st.info("Add trends CSV to data/.")
     else:
-        # --- The critical statistics callout ---
-        n_total = len(trends)
-        n_sig = int(trends["significant_fdr"].sum())
-        n_not = n_total - n_sig
+        cL, cR = st.columns([3, 1], gap="small")
 
-        st.markdown('<div class="fl-section-title">Multiple-Testing Result</div>', unsafe_allow_html=True)
-        st.markdown(f"""
-        <div class="fl-stat-row">
-            <div class="fl-stat">
-                <div class="fl-stat-label">Total pixels tested</div>
-                <div class="fl-stat-value">{n_total:,}</div>
-            </div>
-            <div class="fl-stat">
-                <div class="fl-stat-label">Significant (FDR &lt; 0.05)</div>
-                <div class="fl-stat-value" style="color:{NEG}">{n_sig:,}</div>
-            </div>
-            <div class="fl-stat">
-                <div class="fl-stat-label">Not significant</div>
-                <div class="fl-stat-value" style="color:{NEUTRAL}">{n_not:,}</div>
-            </div>
-            <div class="fl-stat">
-                <div class="fl-stat-label">Correction method</div>
-                <div class="fl-stat-value">Benjamini–Hochberg</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        if n_sig == 0:
+        with cL:
             st.markdown(f"""
-            <div class="fl-warning">
-                <strong>No pixel passed the FDR significance threshold.</strong>
-                After Benjamini–Hochberg correction for {n_total:,} simultaneous tests, zero pixels
-                reached FDR-adjusted p &lt; 0.05. The coloured Sen's slope map therefore shows
-                <em>estimated</em> local trends, but none are statistically distinguishable from
-                noise at the pixel scale. Individual pixels must not be described as "decreasing"
-                or "increasing rainfall" on the basis of this map — only as slope estimates with
-                wide uncertainty.
-            </div>
+            <div class="hud" style="padding-bottom:0;">
+                <span class="hud-bl"></span><span class="hud-br"></span>
+                <div class="hud-head">
+                    <div class="hud-title">Pakistan Spatial Sen's Slope</div>
+                    <div class="hud-meta">7335 CELLS · MM/YR</div>
+                </div>
             """, unsafe_allow_html=True)
+            fig = px.scatter(
+                trends, x="longitude", y="latitude",
+                color="sen_slope_mm_year",
+                color_continuous_scale=[[0, NEG], [0.35, "#c084a0"], [0.5, NEUTRAL], [0.65, BLUE], [1, CYAN]],
+                range_color=(-8, 16),
+                hover_data={"sen_slope_mm_year": ":.2f", "latitude": ":.2f", "longitude": ":.2f"},
+            )
+            add_boundary(fig, boundary)
+            fig.update_traces(marker=dict(size=5, opacity=0.9))
+            fig.update_layout(
+                height=640,
+                xaxis=dict(range=[60, 78], scaleanchor="y", scaleratio=1),
+                yaxis=dict(range=[22, 38]),
+                coloraxis_colorbar=dict(title=dict(text="mm/yr", font=dict(size=9)), thickness=8, len=0.5),
+                margin=dict(l=40, r=10, t=10, b=40),
+            )
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+            st.markdown("</div>", unsafe_allow_html=True)
 
-        mode = st.radio(
-            "Map layer",
-            ["Sen's slope (mm/year)", "Statistical significance"],
-            horizontal=True,
-            label_visibility="collapsed",
-        )
-        map_mode = "significance" if "significance" in mode.lower() else "slope"
-        st.plotly_chart(make_trend_map(trends, boundary, map_mode), use_container_width=True)
-
-        st.markdown(f"""
-        <div class="fl-interpretation">
-            <strong>National vs pixel-level inference.</strong> The national aggregate trend
-            (Mann–Kendall p = 0.035, Sen's slope +5.231 mm/yr) and the pixel-level tests are
-            different statistical questions. The national result describes the trend of the
-            spatially averaged series; the pixel-level tests ask whether individual grid cells
-            exhibit detectable trends once multiple comparisons are accounted for. It is
-            entirely possible — and in this case observed — for the national aggregate to be
-            significant while no individual pixel survives FDR correction.
-        </div>
-        """, unsafe_allow_html=True)
-
-        with st.expander("Inspect nearest grid cell"):
-            c1, c2 = st.columns(2)
-            lat = c1.number_input("Latitude", 24.0, 37.0, 30.0, 0.1)
-            lon = c2.number_input("Longitude", 61.0, 76.0, 70.0, 0.1)
-            idx = ((trends["latitude"] - lat) ** 2 + (trends["longitude"] - lon) ** 2).idxmin()
-            pt = trends.loc[idx]
+        with cR:
             st.markdown(f"""
-            <div class="fl-stat-row">
-                <div class="fl-stat">
-                    <div class="fl-stat-label">Nearest cell</div>
-                    <div class="fl-stat-value">{pt['latitude']:.2f}°N, {pt['longitude']:.2f}°E</div>
+            <div class="hud">
+                <span class="hud-bl"></span><span class="hud-br"></span>
+                <div class="hud-head">
+                    <div class="hud-title blue">Significance Layer</div>
+                    <div class="hud-meta">FDR</div>
                 </div>
-                <div class="fl-stat">
-                    <div class="fl-stat-label">Sen's slope</div>
-                    <div class="fl-stat-value">{pt['sen_slope_mm_year']:.2f} mm/yr</div>
+                <div class="status-list">
+                    <div class="status-item">
+                        <span class="status-dot" style="background:{POS};box-shadow:0 0 6px {POS}"></span>
+                        <span class="status-name">Significant</span>
+                        <span class="status-val">{n_sig:,}</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-dot" style="background:{NEUTRAL}"></span>
+                        <span class="status-name">Not Sig.</span>
+                        <span class="status-val">{n_cells-n_sig:,}</span>
+                    </div>
                 </div>
-                <div class="fl-stat">
-                    <div class="fl-stat-label">FDR-adjusted p</div>
-                    <div class="fl-stat-value">{pt.get('adjusted_p', pt.get('adjusted_p_value', float('nan'))):.4f}</div>
+            </div>
+            <div style="height:10px"></div>
+            <div class="hud">
+                <span class="hud-bl"></span><span class="hud-br"></span>
+                <div class="hud-head">
+                    <div class="hud-title violet">Slope Range</div>
+                    <div class="hud-meta">MM/YR</div>
                 </div>
-                <div class="fl-stat">
-                    <div class="fl-stat-label">Significant (FDR)</div>
-                    <div class="fl-stat-value" style="color:{POS if pt['significant_fdr'] else NEUTRAL}">
-                        {"Yes" if pt['significant_fdr'] else "No"}
+                <div class="status-list">
+                    <div class="status-item">
+                        <span class="status-dot" style="background:{NEG}"></span>
+                        <span class="status-name">Min</span>
+                        <span class="status-val">{trends['sen_slope_mm_year'].min():.2f}</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-dot" style="background:{CYAN}"></span>
+                        <span class="status-name">Max</span>
+                        <span class="status-val">{trends['sen_slope_mm_year'].max():.2f}</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-dot" style="background:{MUTED}"></span>
+                        <span class="status-name">Median</span>
+                        <span class="status-val">{trends['sen_slope_mm_year'].median():.2f}</span>
                     </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
-
-# ===========================================================================
-# PAGE 4 — TERRAIN EXPLORER
-# ===========================================================================
-elif page.startswith("04"):
-    st.markdown('<div class="fl-eyebrow">Terrain Explorer · 04</div>', unsafe_allow_html=True)
-    st.markdown('<div class="fl-h1">Pakistan Terrain Context</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="fl-lead">Static elevation context from SRTM 1-arc-second data. '
-        'Elevation is not a time-varying variable in this analysis — it is provided as '
-        'geographic background for interpreting rainfall behaviour.</div>',
-        unsafe_allow_html=True,
-    )
-
-    if not TERRAIN_FILE.exists():
-        st.info("Optional terrain file not found. Add `FloodLens_Pakistan_Terrain_1km.tif` to `data/`.")
-    elif rasterio is None:
-        st.error("Install rasterio: `pip install rasterio`")
-    else:
-        with rasterio.open(TERRAIN_FILE) as src:
-            elevation = src.read(1).astype("float32")
-            nodata = src.nodata
-            bounds = src.bounds
-        if nodata is not None:
-            elevation[elevation == nodata] = np.nan
-        step = max(1, int(max(elevation.shape) / 140))
-        small = elevation[::step, ::step]
-
-        emin, emax = np.nanmin(elevation), np.nanmax(elevation)
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
         st.markdown(f"""
-        <div class="fl-stat-row">
-            <div class="fl-stat">
-                <div class="fl-stat-label">Elevation minimum</div>
-                <div class="fl-stat-value">{emin:.0f} m</div>
+        <div class="hud">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head">
+                <div class="hud-title">Statistical Reading</div>
+                <div class="hud-meta">CRITICAL</div>
             </div>
-            <div class="fl-stat">
-                <div class="fl-stat-label">Elevation maximum</div>
-                <div class="fl-stat-value">{emax:.0f} m</div>
+            <div class="mc-warn">
+                <strong>No pixel passed Benjamini–Hochberg FDR correction (α = 0.05).</strong>
+                Of {n_cells:,} grid cells, 0 are statistically distinguishable from noise after
+                multiple-testing correction. The coloured Sen's slope map shows <em>estimated</em>
+                local slopes only — individual pixels must not be described as confirmed increasing
+                or decreasing rainfall trends.
             </div>
-            <div class="fl-stat">
-                <div class="fl-stat-label">Source</div>
-                <div class="fl-stat-value">SRTMGL1 · 1 km</div>
-            </div>
-            <div class="fl-stat">
-                <div class="fl-stat-label">Variable type</div>
-                <div class="fl-stat-value">Static context</div>
+            <div style="height:8px"></div>
+            <div class="mc-note">
+                <strong>National vs pixel-level.</strong> The national aggregate Mann–Kendall result
+                (p = 0.035, Sen's slope = +5.231 mm/yr) describes the spatially averaged series.
+                The pixel tests ask whether individual grid cells show detectable trends after
+                multiple-testing control. These are different questions — the national aggregate can
+                be significant while zero pixels survive correction.
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown('<div class="fl-section-title">2D Elevation Model</div>', unsafe_allow_html=True)
-        fig = px.imshow(
+
+# ============================================================================
+# PAGE: TERRAIN
+# ============================================================================
+elif page == "TERRAIN":
+    st.markdown(f"""
+    <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label">Source</div>
+            <div class="kpi-value" style="font-size:1rem;">SRTMGL1</div>
+            <div class="kpi-sub">1 arc-second</div></div>
+        <div class="kpi"><div class="kpi-label">Type</div>
+            <div class="kpi-value" style="font-size:1rem;">STATIC</div>
+            <div class="kpi-sub">context only</div></div>
+        <div class="kpi"><div class="kpi-label">Resolution</div>
+            <div class="kpi-value">1 km</div>
+            <div class="kpi-sub">resampled</div></div>
+        <div class="kpi"><div class="kpi-label">Coverage</div>
+            <div class="kpi-value">PAK</div>
+            <div class="kpi-sub">60–78 E · 22–38 N</div></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if not TERRAIN_FILE.exists():
+        st.info("Optional terrain file not found. Add `FloodLens_Pakistan_Terrain_1km.tif` to data/.")
+    elif rasterio is None:
+        st.error("Install rasterio: `pip install rasterio`")
+    else:
+        with rasterio.open(TERRAIN_FILE) as src:
+            elev = src.read(1).astype("float32")
+            nodata = src.nodata
+            bounds = src.bounds
+        if nodata is not None:
+            elev[elev == nodata] = np.nan
+        step = max(1, int(max(elev.shape) / 150))
+        small = elev[::step, ::step]
+
+        st.markdown(f"""
+        <div class="hud" style="padding-bottom:0;">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head">
+                <div class="hud-title">Digital Elevation Model</div>
+                <div class="hud-meta">MIN {np.nanmin(elev):.0f}m · MAX {np.nanmax(elev):.0f}m</div>
+            </div>
+        """, unsafe_allow_html=True)
+        f = px.imshow(
             small, origin="upper", aspect="auto",
-            color_continuous_scale=[
-                [0.0, "#0a1628"],
-                [0.15, "#1e3a5f"],
-                [0.35, "#4a7c59"],
-                [0.6, "#a8a06a"],
-                [0.8, "#c9a875"],
-                [1.0, "#f0f0f0"],
-            ],
+            color_continuous_scale=[[0, "#040810"], [0.2, "#1e3a5f"], [0.4, "#4a7c59"], [0.7, "#a8a06a"], [1, "#e8e8e8"]],
         )
-        fig.update_layout(
-            height=560,
-            coloraxis_colorbar=dict(title=dict(text="Elevation (m)", font=dict(size=11)), thickness=10, len=0.6),
-            xaxis=dict(visible=False),
-            yaxis=dict(visible=False),
+        f.update_layout(
+            height=520,
+            margin=dict(l=10, r=10, t=10, b=10),
+            coloraxis_colorbar=dict(title=dict(text="m", font=dict(size=9)), thickness=8, len=0.6),
+            xaxis=dict(visible=False), yaxis=dict(visible=False),
         )
-        st.plotly_chart(fig, use_container_width=True)
-
-        st.markdown('<div class="fl-section-title">3D Terrain Surface</div>', unsafe_allow_html=True)
-        show3d = st.checkbox("Render interactive 3D surface", value=False)
-        if show3d:
-            rows, cols = small.shape
-            x = np.linspace(bounds.left, bounds.right, cols)
-            y = np.linspace(bounds.top, bounds.bottom, rows)
-            X, Y = np.meshgrid(x, y)
-            fig3d = go.Figure(go.Surface(
-                x=X, y=Y, z=small,
-                colorscale=[[0, "#0a1628"], [0.35, "#4a7c59"], [0.6, "#a8a06a"], [1, "#f0f0f0"]],
-                showscale=False,
-            ))
-            fig3d.update_layout(
-                height=680,
-                scene=dict(
-                    xaxis_title="Easting (m)",
-                    yaxis_title="Northing (m)",
-                    zaxis_title="Elevation (m)",
-                    xaxis=dict(backgroundcolor="rgba(0,0,0,0)", gridcolor="rgba(148,163,184,0.1)"),
-                    yaxis=dict(backgroundcolor="rgba(0,0,0,0)", gridcolor="rgba(148,163,184,0.1)"),
-                    zaxis=dict(backgroundcolor="rgba(0,0,0,0)", gridcolor="rgba(148,163,184,0.1)"),
-                    aspectratio=dict(x=1, y=1, z=0.3),
-                ),
-                margin=dict(l=0, r=0, t=0, b=0),
-            )
-            st.plotly_chart(fig3d, use_container_width=True)
+        st.plotly_chart(f, use_container_width=True, config={"displayModeBar": False})
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
-# ===========================================================================
-# PAGE 5 — METHODOLOGY & DATA
-# ===========================================================================
+# ============================================================================
+# PAGE: METHODOLOGY
+# ============================================================================
 else:
-    st.markdown('<div class="fl-eyebrow">Methodology & Data · 05</div>', unsafe_allow_html=True)
-    st.markdown('<div class="fl-h1">Scientific Methodology</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="fl-lead">Data sources, statistical tests, and the limits of interpretation '
-        'for FloodLens AI.</div>',
-        unsafe_allow_html=True,
-    )
+    c1, c2, c3 = st.columns(3, gap="small")
+    with c1:
+        st.markdown(f"""
+        <div class="hud">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head"><div class="hud-title">Precipitation</div><div class="hud-meta">INPUT</div></div>
+            <div style="font-size:0.8rem;color:{TEXT};margin-bottom:6px;font-weight:600;">NASA GPM IMERG V07</div>
+            <div style="font-size:0.7rem;color:{MUTED};line-height:1.6;">
+                Gridded monthly precipitation at 0.1° resolution, aggregated to a national series for
+                Pakistan, 2001–2024.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"""
+        <div class="hud">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head"><div class="hud-title blue">Elevation</div><div class="hud-meta">CONTEXT</div></div>
+            <div style="font-size:0.8rem;color:{TEXT};margin-bottom:6px;font-weight:600;">USGS SRTMGL1</div>
+            <div style="font-size:0.7rem;color:{MUTED};line-height:1.6;">
+                1 arc-second elevation. Static geographic context — never used as a trend variable.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c3:
+        st.markdown(f"""
+        <div class="hud">
+            <span class="hud-bl"></span><span class="hud-br"></span>
+            <div class="hud-head"><div class="hud-title violet">Statistics</div><div class="hud-meta">METHOD</div></div>
+            <div style="font-size:0.8rem;color:{TEXT};margin-bottom:6px;font-weight:600;">MK · Sen · BH-FDR</div>
+            <div style="font-size:0.7rem;color:{MUTED};line-height:1.6;">
+                Mann–Kendall with Hamed–Rao correction, Sen's slope estimator, Benjamini–Hochberg FDR.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown('<div class="fl-section-title">Data Sources</div>', unsafe_allow_html=True)
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
     st.markdown(f"""
-    <div class="fl-panel">
-        <div class="fl-panel-title">NASA GPM IMERG Monthly V07</div>
-        <div class="fl-panel-sub">Global Precipitation Measurement · Integrated Multi-satellitE Retrievals</div>
-        Gridded monthly precipitation estimates at 0.1° resolution, aggregated to a national
-        monthly series for Pakistan, 2001–2024.
-    </div>
-    <div class="fl-panel" style="margin-top:12px;">
-        <div class="fl-panel-title">USGS SRTMGL1</div>
-        <div class="fl-panel-sub">Shuttle Radar Topography Mission · 1 arc-second</div>
-        Static elevation context used solely for geographic interpretation — not a trend variable.
+    <div class="hud">
+        <span class="hud-bl"></span><span class="hud-br"></span>
+        <div class="hud-head">
+            <div class="hud-title">Interpretation Limits</div>
+            <div class="hud-meta">READ CAREFULLY</div>
+        </div>
+        <div class="mc-warn">
+            <strong>What FloodLens does not claim.</strong>
+            Rainfall trends are estimates, not forecasts. National aggregate and pixel-level results
+            answer different questions. Zero pixels passed FDR correction at pixel scale. Satellite
+            precipitation carries retrieval uncertainty. SRTM elevation is static context.
+        </div>
     </div>
     """, unsafe_allow_html=True)
-
-    st.markdown('<div class="fl-section-title">Statistical Methods</div>', unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="fl-panel">
-        <div class="fl-panel-title">Mann–Kendall trend test</div>
-        <div class="fl-panel-sub">Non-parametric monotonic trend detection</div>
-        Applied to the national monthly rainfall aggregate with Hamed–Rao correction for
-        autocorrelation. Result: <b style="color:{POS}">increasing</b>, p = 0.035.
-    </div>
-    <div class="fl-panel" style="margin-top:12px;">
-        <div class="fl-panel-title">Sen's slope estimator</div>
-        <div class="fl-panel-sub">Robust median of pairwise slopes</div>
-        National Sen's slope: <b>+5.231 mm/year</b>. Pixel-level Sen's slopes are computed
-        per grid cell and shown on the Spatial Trend Intelligence page.
-    </div>
-    <div class="fl-panel" style="margin-top:12px;">
-        <div class="fl-panel-title">Benjamini–Hochberg FDR correction</div>
-        <div class="fl-panel-sub">Multiple-testing control at α = 0.05</div>
-        Applied to the {len(trends) if trends is not None else 0:,} pixel-level Mann–Kendall tests.
-        Result: <b style="color:{NEG}">0 pixels significant</b> after FDR correction.
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown('<div class="fl-section-title">Interpretation Limits</div>', unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="fl-warning">
-        <strong>What this dashboard does not claim.</strong>
-        <ul style="margin:8px 0 0 0; padding-left:20px;">
-            <li>Rainfall trends are estimates — not forecasts and not flood predictions.</li>
-            <li>The national aggregate trend and pixel-level trends are different statistical questions.</li>
-            <li>No pixel passed FDR correction; pixel-level slopes must not be described as significant trends.</li>
-            <li>Satellite precipitation products carry retrieval uncertainty and resolution limits.</li>
-            <li>SRTM elevation is static context and does not enter any trend test.</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown('<div class="fl-section-title">Expected Data Files</div>', unsafe_allow_html=True)
-    st.code(
-        "data/\n"
-        "├── Pakistan_GPM_Rainfall_2001_2024.csv\n"
-        "├── FloodLens_Pakistan_Pixel_Trends_2001_2024.csv\n"
-        "├── pakistan_boundary.geojson\n"
-        "└── FloodLens_Pakistan_Terrain_1km.tif  # optional",
-        language="text",
-    )
-
-
-# ---------------------------------------------------------------------------
-render_footer()
