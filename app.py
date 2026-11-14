@@ -487,6 +487,79 @@ def load_forecast_files():
     return dataset, validation, performance, []
 
 
+def make_forecast_template(regions, forecast_year):
+    """Create a blank upload template for one future monsoon season."""
+    return pd.DataFrame({
+        "year": [int(forecast_year)] * len(regions),
+        "region": list(regions),
+        "pre_rainfall_mm": [np.nan] * len(regions),
+        "pre_soil_moisture_mm": [np.nan] * len(regions),
+    })
+
+
+def run_regional_forecast(history, performance, future_inputs, alpha=10.0):
+    """Fit the historical Ridge experiment and produce regional estimates.
+
+    Numeric predictors are standardized; region is one-hot encoded. The
+    intercept is unpenalized and Ridge coefficients use alpha=10, matching
+    the original experiment's preprocessing/model setup.
+    """
+    feature_cols = ["pre_rainfall_mm", "pre_soil_moisture_mm"]
+    target_col = "monsoon_rainfall_mm"
+    regions = sorted(history["region"].dropna().unique().tolist())
+
+    train = history.dropna(subset=feature_cols + [target_col]).copy()
+    if train.empty:
+        raise ValueError("The historical training dataset has no complete rows.")
+
+    x_num = train[feature_cols].astype(float).to_numpy()
+    x_mean = x_num.mean(axis=0)
+    x_std = x_num.std(axis=0, ddof=0)
+    x_std[x_std == 0] = 1.0
+    x_num_scaled = (x_num - x_mean) / x_std
+
+    train_regions = train["region"].astype(str).tolist()
+    onehot = np.array([[1.0 if r == category else 0.0 for category in regions]
+                       for r in train_regions], dtype=float)
+    x_train = np.column_stack([x_num_scaled, onehot])
+    y_train = train[target_col].astype(float).to_numpy()
+
+    x_bar = x_train.mean(axis=0)
+    y_bar = y_train.mean()
+    x_centered = x_train - x_bar
+    y_centered = y_train - y_bar
+    penalty = np.eye(x_train.shape[1], dtype=float) * float(alpha)
+    coefficients = np.linalg.solve(x_centered.T @ x_centered + penalty,
+                                   x_centered.T @ y_centered)
+    intercept = y_bar - x_bar @ coefficients
+
+    future = future_inputs.copy()
+    future["region"] = future["region"].astype(str)
+    x_future_num = future[feature_cols].astype(float).to_numpy()
+    x_future_scaled = (x_future_num - x_mean) / x_std
+    x_future_onehot = np.array([
+        [1.0 if r == category else 0.0 for category in regions]
+        for r in future["region"].tolist()
+    ], dtype=float)
+    x_future = np.column_stack([x_future_scaled, x_future_onehot])
+    future["ridge_prediction_mm"] = intercept + x_future @ coefficients
+
+    regional_baseline = train.groupby("region")[target_col].mean().to_dict()
+    future["baseline_prediction_mm"] = future["region"].map(regional_baseline)
+
+    method_map = performance.set_index("region")["Recommended_method"].astype(str).to_dict()
+    future["recommended_method"] = future["region"].map(method_map).fillna("Experimental Ridge")
+    future["selected_prediction_mm"] = np.where(
+        future["recommended_method"].str.contains("Ridge", case=False, na=False),
+        future["ridge_prediction_mm"],
+        future["baseline_prediction_mm"],
+    )
+    future["selected_prediction_mm"] = future["selected_prediction_mm"].clip(lower=0)
+    future["ridge_prediction_mm"] = future["ridge_prediction_mm"].clip(lower=0)
+    future["baseline_prediction_mm"] = future["baseline_prediction_mm"].clip(lower=0)
+    return future
+
+
 @st.cache_data
 def read_boundary(path):
     with open(path, "r", encoding="utf-8") as f:
@@ -1093,10 +1166,12 @@ elif page == "Regional monsoon outlook":
         '<div class="fl-section">Regional Monsoon Outlook</div>',
         unsafe_allow_html=True,
     )
-    st.markdown("### 🌧️ Historical regional monsoon forecast experiment")
+    st.markdown("### 🌧️ Historical validation + future monsoon estimates")
     st.info(
         "This page presents a historical model experiment and backtest for "
-        "2001–2021. It does not provide a live 2026 forecast or a flood warning."
+        "2001–2021, plus an upload-driven tool for experimental future-year "
+        "monsoon estimates. It does not automatically fetch current predictors "
+        "or provide an official forecast or flood warning."
     )
 
     forecast_data, validation, performance, missing_forecast_files = load_forecast_files()
@@ -1170,6 +1245,144 @@ elif page == "Regional monsoon outlook":
             region_history = forecast_data[
                 forecast_data["region"] == selected_region
             ].sort_values("year")
+
+            # ---------------------------------------------------------------
+            # FUTURE MONSOON FORECAST: user supplies same-definition inputs
+            # ---------------------------------------------------------------
+            st.markdown(
+                '<div class="fl-card"><div class="fl-card-title">'
+                '🛰️ Generate a regional monsoon estimate</div>',
+                unsafe_allow_html=True,
+            )
+            st.write(
+                "Upload March–May predictor values for a future monsoon year. "
+                "The app will fit the same historical Ridge experiment and "
+                "apply the region-specific method selected by the backtest."
+            )
+            st.info(
+                "Required inputs: March–May TerraClimate precipitation total "
+                "(pre_rainfall_mm) and mean soil moisture "
+                "(pre_soil_moisture_mm), one row per study region. The current "
+                "historical training file ends in 2021; it does not contain "
+                "2026 or 2027 predictor observations."
+            )
+            default_forecast_year = max(2027, int(pd.to_numeric(
+                forecast_data["year"], errors="coerce").max()) + 1)
+            template = make_forecast_template(regions, default_forecast_year)
+            st.download_button(
+                "Download future-input CSV template",
+                data=template.to_csv(index=False).encode("utf-8"),
+                file_name=f"FloodLens_Monsoon_Inputs_{default_forecast_year}.csv",
+                mime="text/csv",
+                key="future_forecast_template",
+            )
+            forecast_upload = st.file_uploader(
+                "Upload March–May regional predictor CSV",
+                type=["csv"],
+                key="future_monsoon_predictors",
+                help=("Required columns: year, region, pre_rainfall_mm, "
+                      "pre_soil_moisture_mm. Include all four regions once."),
+            )
+            input_mode = st.radio(
+                "How should these inputs be interpreted?",
+                ["Observed March–May data", "Scenario assumptions"],
+                horizontal=True,
+                key="forecast_input_mode",
+            )
+            if forecast_upload is not None:
+                try:
+                    future_inputs = pd.read_csv(forecast_upload)
+                    required_future_cols = {
+                        "year", "region", "pre_rainfall_mm", "pre_soil_moisture_mm"
+                    }
+                    missing_future_cols = required_future_cols - set(future_inputs.columns)
+                    if missing_future_cols:
+                        st.error("Missing input columns: " + ", ".join(sorted(missing_future_cols)))
+                    else:
+                        future_inputs = future_inputs[list(required_future_cols)].copy()
+                        future_inputs["year"] = pd.to_numeric(future_inputs["year"], errors="coerce")
+                        for col in ["pre_rainfall_mm", "pre_soil_moisture_mm"]:
+                            future_inputs[col] = pd.to_numeric(future_inputs[col], errors="coerce")
+                        future_inputs["region"] = future_inputs["region"].astype(str).str.strip()
+                        history_end = int(pd.to_numeric(forecast_data["year"], errors="coerce").max())
+                        input_years = future_inputs["year"].dropna().unique()
+                        input_regions = future_inputs["region"].tolist()
+                        valid_regions = set(regions)
+                        problems = []
+                        if len(input_years) != 1:
+                            problems.append("Use one common forecast year in all rows.")
+                        elif input_years[0] <= history_end:
+                            problems.append(f"Forecast year must be after the training period ending {history_end}.")
+                        if len(input_regions) != len(regions) or set(input_regions) != valid_regions:
+                            problems.append("Include each of the four study regions exactly once, with exact region names.")
+                        if future_inputs["region"].duplicated().any():
+                            problems.append("Duplicate region rows were found.")
+                        if future_inputs[["pre_rainfall_mm", "pre_soil_moisture_mm"]].isna().any().any():
+                            problems.append("Predictor values must be numeric and non-empty.")
+                        if (future_inputs[["pre_rainfall_mm", "pre_soil_moisture_mm"]] < 0).any().any():
+                            problems.append("Predictor values cannot be negative.")
+                        if problems:
+                            for problem in problems:
+                                st.error(problem)
+                        else:
+                            forecast_result = run_regional_forecast(
+                                forecast_data, performance, future_inputs
+                            )
+                            forecast_year = int(input_years[0])
+                            mode_note = (
+                                "Scenario projection only — inputs are assumptions, not observed measurements."
+                                if input_mode == "Scenario assumptions"
+                                else "Model estimate based on user-supplied observed March–May predictors."
+                            )
+                            st.success(f"Regional monsoon estimates generated for {forecast_year}.")
+                            st.caption(mode_note)
+                            selected_forecast = forecast_result[
+                                forecast_result["region"] == selected_region
+                            ]
+                            if not selected_forecast.empty:
+                                selected_row = selected_forecast.iloc[0]
+                                f1, f2, f3 = st.columns(3)
+                                f1.metric("Selected regional estimate", f'{selected_row["selected_prediction_mm"]:,.1f} mm')
+                                f2.metric("Ridge estimate", f'{selected_row["ridge_prediction_mm"]:,.1f} mm')
+                                f3.metric("Historical baseline", f'{selected_row["baseline_prediction_mm"]:,.1f} mm')
+                                st.caption(
+                                    f"Selected method: {selected_row['recommended_method']} · "
+                                    "Target: June–September total rainfall"
+                                )
+                            display_forecast = forecast_result[[
+                                "year", "region", "pre_rainfall_mm", "pre_soil_moisture_mm",
+                                "ridge_prediction_mm", "baseline_prediction_mm",
+                                "recommended_method", "selected_prediction_mm"
+                            ]].sort_values("region")
+                            st.dataframe(display_forecast.round(2), use_container_width=True, hide_index=True)
+                            fig_future = px.bar(
+                                display_forecast,
+                                x="region", y="selected_prediction_mm",
+                                color="recommended_method", text_auto=".1f",
+                                title=f"{forecast_year} experimental regional monsoon estimates",
+                                labels={"region": "Study region", "selected_prediction_mm": "Estimated rainfall (mm)"},
+                            )
+                            st.plotly_chart(style_fig(fig_future, height=390), use_container_width=True)
+                            st.download_button(
+                                "Download regional estimates",
+                                data=display_forecast.to_csv(index=False).encode("utf-8"),
+                                file_name=f"FloodLens_Regional_Monsoon_Estimates_{forecast_year}.csv",
+                                mime="text/csv",
+                                key="download_generated_forecast",
+                            )
+                            st.warning(
+                                "Experimental estimate only. The model has five held-out "
+                                "validation years per region, limited overall improvement, "
+                                "and no calibrated prediction interval. It is not a flood warning."
+                            )
+                except Exception as exc:
+                    st.error(f"Could not process the predictor file: {exc}")
+            else:
+                st.caption(
+                    "No forecast has been generated yet. Download the template, "
+                    "fill it with real March–May regional predictor values, and upload it here."
+                )
+            st.markdown("</div>", unsafe_allow_html=True)
 
             if region_perf.empty:
                 st.warning("No performance summary is available for this region.")
