@@ -45,6 +45,12 @@ FUTURE_NEG = "#FB7185"
 
 BG_MAIN = "#080D18"
 
+# FIX: alert palette constants (used in CSS)
+ALERT_INFO = "#27D9F2"
+ALERT_WARN = "#FBBF24"
+ALERT_OK = "#34D399"
+ALERT_ERR = "#FB7185"
+
 
 def inject_css():
     """Inject the whole mission-control theme in one place, forcing dark mode on widgets."""
@@ -76,7 +82,7 @@ def inject_css():
             color: var(--text);
             font-family: 'Inter', sans-serif;
         }}
-        
+
         /* -------- Hide default Streamlit chrome -------- */
         #MainMenu, header, footer {{ visibility: hidden; }}
         .block-container {{ padding-top: 1.2rem; padding-bottom: 2rem; max-width: 1350px; }}
@@ -184,8 +190,29 @@ def inject_css():
             border-radius: 8px !important;
             color: {TEXT_LIGHT} !important;
         }}
-        /* Dropdown Menu Popover */
+
+        /* FIX: open selectbox dropdown (popover/menu/listbox/options) */
+        div[data-baseweb="popover"],
         div[data-baseweb="popover"] > div,
+        div[data-baseweb="menu"],
+        ul[role="listbox"] {{
+            background-color: {FUTURE_PANEL} !important;
+            color: {TEXT_LIGHT} !important;
+            border: 1px solid {FUTURE_CYAN} !important;
+            border-radius: 8px !important;
+            box-shadow: 0 0 20px rgba(39,217,242,0.25) !important;
+        }}
+        ul[role="listbox"] li,
+        li[role="option"] {{
+            background-color: {FUTURE_PANEL} !important;
+            color: {TEXT_LIGHT} !important;
+        }}
+        li[role="option"]:hover,
+        li[role="option"][aria-selected="true"] {{
+            background-color: rgba(39,217,242,0.15) !important;
+            color: {FUTURE_CYAN} !important;
+        }}
+        /* Preserve legacy selector used elsewhere in this file */
         ul[data-testid="stSelectboxVirtualDropdown"] {{
             background-color: {FUTURE_PANEL} !important;
             border: 1px solid {FUTURE_CYAN} !important;
@@ -197,7 +224,60 @@ def inject_css():
             background-color: rgba(39,217,242,0.15) !important;
             color: {FUTURE_CYAN} !important;
         }}
-        
+
+        /* FIX: text inside closed select / inputs / svg icons */
+        div[data-baseweb="select"] span,
+        div[data-baseweb="select"] input,
+        div[data-baseweb="select"] svg,
+        div[data-baseweb="input"] input,
+        div[data-baseweb="input"] span,
+        div[data-baseweb="input"] svg,
+        div[data-testid="stNumberInput"] input,
+        div[data-testid="stNumberInput"] svg {{
+            color: {TEXT_LIGHT} !important;
+            fill: {TEXT_LIGHT} !important;
+        }}
+
+        /* FIX: number input +/- stepper buttons */
+        [data-testid="stNumberInputStepUp"],
+        [data-testid="stNumberInputStepDown"] {{
+            background-color: {BG_MAIN} !important;
+            color: {FUTURE_CYAN} !important;
+            border: 1px solid rgba(39,217,242,0.3) !important;
+        }}
+        [data-testid="stNumberInputStepUp"]:hover,
+        [data-testid="stNumberInputStepDown"]:hover {{
+            background-color: rgba(39,217,242,0.15) !important;
+            color: #FFFFFF !important;
+        }}
+
+        /* FIX: file uploader dropzone + button */
+        [data-testid="stFileUploaderDropzone"] {{
+            background-color: {BG_MAIN} !important;
+            border: 1px dashed rgba(39,217,242,0.45) !important;
+            border-radius: 10px !important;
+            color: {TEXT_LIGHT} !important;
+        }}
+        [data-testid="stFileUploaderDropzone"] * {{
+            color: {TEXT_LIGHT} !important;
+        }}
+        [data-testid="stFileUploaderDropzone"] button {{
+            background-color: rgba(39,217,242,0.10) !important;
+            color: {FUTURE_CYAN} !important;
+            border: 1px solid rgba(39,217,242,0.4) !important;
+            border-radius: 8px !important;
+        }}
+
+        /* FIX: cyan focus glow on all inputs */
+        div[data-baseweb="select"] > div:focus-within,
+        div[data-baseweb="input"] > div:focus-within,
+        div[data-testid="stNumberInput"] > div > div:focus-within,
+        div[data-testid="stTextInput"] input:focus,
+        textarea:focus {{
+            border-color: {FUTURE_CYAN} !important;
+            box-shadow: 0 0 0 2px rgba(39,217,242,0.35) !important;
+        }}
+
         /* Expander */
         .stExpander {{
             border: 1px solid rgba(39,217,242,0.25) !important;
@@ -214,21 +294,142 @@ def inject_css():
             background-color: {BG_MAIN} !important;
         }}
 
-        /* Dataframe */
+        /* Dataframe: keep the wrapper border/radius/padding; no attempt to recolour
+           the canvas grid via CSS (see .fl-table for CSS-rendered tables) */
         div[data-testid="stDataFrame"] {{
             background-color: {FUTURE_PANEL} !important;
             border: 1px solid rgba(39,217,242,0.2);
             border-radius: 12px;
             padding: 8px;
         }}
-        div[data-testid="stDataFrame"] * {{
+
+        /* FIX: CSS-rendered dark table (used by render_dark_table) */
+        .fl-table-wrap {{
+            overflow-x: auto;
+            border: 1px solid rgba(39,217,242,0.25);
+            border-radius: 12px;
+            background-color: {FUTURE_PANEL};
+            padding: 4px;
+            margin: 4px 0 12px 0;
+        }}
+        table.fl-table {{
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            color: {TEXT_LIGHT};
+            background-color: {FUTURE_PANEL};
+        }}
+        table.fl-table thead th {{
+            background-color: {BG_MAIN};
+            color: {FUTURE_CYAN};
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 12px;
+            padding: 10px 12px;
+            border-bottom: 1px solid {FUTURE_CYAN};
+            text-align: left;
+            white-space: nowrap;
+        }}
+        table.fl-table tbody td {{
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            color: {TEXT_LIGHT};
+            vertical-align: top;
+        }}
+        table.fl-table tbody tr:hover td {{
+            background-color: rgba(39,217,242,0.06);
+        }}
+        table.fl-table td.num,
+        table.fl-table th.num {{
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }}
+        table.fl-table tbody tr:last-child td {{
+            border-bottom: none;
+        }}
+
+        /* FIX: alerts (info / warning / success / error) */
+        [data-testid="stAlert"],
+        [data-testid="stAlertContainer"] {{
+            background-color: rgba(20,31,48,0.75) !important;
+            color: {TEXT_LIGHT} !important;
+            border: 1px solid rgba(39,217,242,0.25) !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+        }}
+        [data-testid="stAlert"] *,
+        [data-testid="stAlertContainer"] *,
+        [data-testid="stAlert"] p,
+        [data-testid="stAlert"] span,
+        [data-testid="stAlert"] li,
+        [data-testid="stAlert"] strong,
+        [data-testid="stAlert"] code,
+        [data-testid="stAlertContainer"] p,
+        [data-testid="stAlertContainer"] span,
+        [data-testid="stAlertContainer"] li,
+        [data-testid="stAlertContainer"] strong,
+        [data-testid="stAlertContainer"] code {{
             color: {TEXT_LIGHT} !important;
         }}
-        /* Fix Streamlit dataframe header */
-        div[data-testid="stDataFrame"] th {{
+        /* Alert variants (Streamlit tags containers with these kinds) */
+        [data-testid="stAlert"][data-baseweb="notification"]:has(svg[aria-label="info"]),
+        [data-testid="stAlert"]:has([aria-label="info"]) {{
+            border-left: 4px solid {ALERT_INFO} !important;
+            background-color: rgba(39,217,242,0.10) !important;
+        }}
+        [data-testid="stAlert"]:has([aria-label="warning"]) {{
+            border-left: 4px solid {ALERT_WARN} !important;
+            background-color: rgba(251,191,36,0.10) !important;
+        }}
+        [data-testid="stAlert"]:has([aria-label="success"]) {{
+            border-left: 4px solid {ALERT_OK} !important;
+            background-color: rgba(52,211,153,0.10) !important;
+        }}
+        [data-testid="stAlert"]:has([aria-label="error"]) {{
+            border-left: 4px solid {ALERT_ERR} !important;
+            background-color: rgba(251,113,133,0.10) !important;
+        }}
+        /* Fallback for Streamlit's stAlert-<kind> class variants */
+        .stAlert-info, .stAlert-container.stAlert-info {{
+            border-left: 4px solid {ALERT_INFO} !important;
+            background-color: rgba(39,217,242,0.10) !important;
+        }}
+        .stAlert-warning, .stAlert-container.stAlert-warning {{
+            border-left: 4px solid {ALERT_WARN} !important;
+            background-color: rgba(251,191,36,0.10) !important;
+        }}
+        .stAlert-success, .stAlert-container.stAlert-success {{
+            border-left: 4px solid {ALERT_OK} !important;
+            background-color: rgba(52,211,153,0.10) !important;
+        }}
+        .stAlert-error, .stAlert-container.stAlert-error {{
+            border-left: 4px solid {ALERT_ERR} !important;
+            background-color: rgba(251,113,133,0.10) !important;
+        }}
+
+        /* FIX: st.code blocks readable on dark */
+        [data-testid="stCode"],
+        [data-testid="stCodeBlock"],
+        div.highlight,
+        pre {{
             background-color: {BG_MAIN} !important;
-            color: {FUTURE_CYAN} !important;
-            font-family: 'Rajdhani', sans-serif !important;
+            color: {TEXT_LIGHT} !important;
+            border: 1px solid rgba(39,217,242,0.20) !important;
+            border-radius: 10px !important;
+        }}
+        [data-testid="stCode"] code,
+        [data-testid="stCodeBlock"] code,
+        pre code {{
+            color: {TEXT_LIGHT} !important;
+            background-color: transparent !important;
+        }}
+        /* FIX: st.caption readable on dark */
+        [data-testid="stCaptionContainer"],
+        [data-testid="stCaptionContainer"] *,
+        .stCaption {{
+            color: {TEXT_MUTED} !important;
         }}
 
         /* Metrics (KPI cards) */
@@ -421,6 +622,48 @@ def style_fig(fig, height=None, title=None):
 def hud_caption(text):
     """Small HUD-style caption under a chart."""
     st.markdown(f'<div class="fl-hud-caption">{text}</div>', unsafe_allow_html=True)
+
+
+# FIX: render_dark_table — themed replacement for st.dataframe
+def render_dark_table(df, decimals=2, num_cols=None, index=False):
+    """Render a pandas DataFrame as a themed dark HTML table with horizontal scroll.
+
+    Numeric columns are right-aligned and formatted to `decimals` decimal places,
+    unless explicitly listed in `num_cols` (also supports columns to *exclude* by
+    omitting from that list). Non-numeric columns are rendered as-is.
+    """
+    if df is None or len(df) == 0:
+        st.info("No rows to display.")
+        return
+
+    work = df.copy()
+
+    # Determine numeric columns to format
+    if num_cols is None:
+        numeric_cols = list(work.select_dtypes(include=["number"]).columns)
+    else:
+        numeric_cols = [c for c in num_cols if c in work.columns]
+
+    styler = work.style
+
+    def _fmt_num(v):
+        if pd.isna(v):
+            return ""
+        try:
+            return f"{float(v):,.{decimals}f}"
+        except (TypeError, ValueError):
+            return str(v)
+
+    for col in numeric_cols:
+        styler = styler.format({col: _fmt_num})
+
+    html = styler.hide(axis="index").to_html(
+        classes="fl-table",
+        index=index,
+        border=0,
+        escape=False,
+    )
+    st.markdown(f'<div class="fl-table-wrap">{html}</div>', unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------------------
@@ -815,6 +1058,8 @@ def build_future_outlook_chart(regional_hist, region, target_year, method):
         legend=dict(orientation="h", y=-0.2, x=0),
         height=470,
     )
+    # FIX: integer year ticks on future outlook chart
+    fig.update_xaxes(tickmode="linear", dtick=1, tickformat="d")
     return style_fig(fig, height=470)
 
 
@@ -912,7 +1157,9 @@ def render_future_outlook(regional_hist):
                 "Years used": p["n_years"],
             })
     comp_df = pd.DataFrame(rows)
-    st.dataframe(comp_df, use_container_width=True, hide_index=True, key="future_outlook_table")
+
+    # FIX: replace st.dataframe with themed table
+    render_dark_table(comp_df, decimals=2)
 
     if not comp_df.empty:
         st.download_button(
@@ -1024,6 +1271,8 @@ if page == "National overview":
         )
         fig.update_layout(xaxis_title="Year", yaxis_title="Annual rainfall (mm)")
         fig = style_fig(fig, height=460)
+        # FIX: integer year ticks on annual chart
+        fig.update_xaxes(tickmode="linear", dtick=1, tickformat="d")
         st.plotly_chart(fig, use_container_width=True)
         hud_caption("ANNUAL NATIONAL RAINFALL TOTALS · GPM IMERG MONTHLY V07")
         st.markdown("</div>", unsafe_allow_html=True)
@@ -1518,7 +1767,11 @@ elif page == "Regional monsoon outlook":
                                     "ridge_prediction_mm", "baseline_prediction_mm",
                                     "recommended_method", "selected_prediction_mm"
                                 ]].sort_values("region")
-                                st.dataframe(display_forecast.round(2), use_container_width=True, hide_index=True)
+                                # FIX: replace st.dataframe with themed table
+                                render_dark_table(
+                                    display_forecast.round(2),
+                                    decimals=2,
+                                )
                                 fig_future = px.bar(
                                     display_forecast,
                                     x="region", y="selected_prediction_mm",
@@ -1598,6 +1851,8 @@ elif page == "Regional monsoon outlook":
                 line=dict(color=ACCENT_CYAN, width=2.2),
                 marker=dict(size=7),
             )
+            # FIX: integer year ticks on historical monsoon chart
+            fig_history.update_xaxes(tickmode="linear", dtick=1, tickformat="d")
             st.plotly_chart(
                 style_fig(fig_history, height=390),
                 use_container_width=True,
@@ -1649,16 +1904,18 @@ elif page == "Regional monsoon outlook":
                     xaxis_title="Test year",
                     yaxis_title="June–September rainfall (mm)",
                 )
+                # FIX: integer year ticks on validation chart
+                fig_validation.update_xaxes(tickmode="linear", dtick=1, tickformat="d")
                 st.plotly_chart(
                     style_fig(fig_validation, height=420),
                     use_container_width=True,
                 )
-                st.dataframe(
+                # FIX: replace st.dataframe with themed table
+                render_dark_table(
                     region_validation[
                         ["year", "actual", "ridge_prediction", "baseline_prediction"]
                     ].round(2),
-                    use_container_width=True,
-                    hide_index=True,
+                    decimals=2,
                 )
             else:
                 st.warning("No chronological validation rows were found for this region.")
@@ -1684,22 +1941,26 @@ elif page == "Regional monsoon outlook":
                 name="Historical baseline MAE",
                 marker_color=ACCENT_ORANGE,
             ))
+            # FIX: wrap " and " for shorter x labels to prevent overlap
+            wrapped_labels = [str(r).replace(" and ", "<br>and ") for r in comparison["region"]]
             fig_compare.update_layout(
                 barmode="group",
                 xaxis_title="Study region",
                 yaxis_title="Mean absolute error (mm)",
+                margin=dict(l=20, r=20, t=55, b=90),
             )
+            fig_compare.update_xaxes(tickangle=-20, ticktext=wrapped_labels, tickvals=list(comparison["region"]))
             st.plotly_chart(
                 style_fig(fig_compare, height=420),
                 use_container_width=True,
             )
-            st.dataframe(
+            # FIX: replace st.dataframe with themed table
+            render_dark_table(
                 comparison[
                     ["region", "Ridge_MAE", "Baseline_MAE",
                      "Improvement_percent", "Recommended_method"]
                 ].round(2),
-                use_container_width=True,
-                hide_index=True,
+                decimals=2,
             )
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1710,10 +1971,10 @@ elif page == "Regional monsoon outlook":
             )
 
             with st.expander("Inspect the model input dataset"):
-                st.dataframe(
+                # FIX: replace st.dataframe with themed table
+                render_dark_table(
                     forecast_data[forecast_data["region"] == selected_region],
-                    use_container_width=True,
-                    hide_index=True,
+                    decimals=2,
                 )
 
             st.download_button(
