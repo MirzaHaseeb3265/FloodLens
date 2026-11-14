@@ -458,11 +458,33 @@ SPATIAL_FILE = DATA / "FloodLens_Pakistan_Spatial_Rainfall_2001_2024.csv"
 TRENDS_FILE = DATA / "FloodLens_Pakistan_Pixel_Trends_2001_2024.csv"
 BOUNDARY_FILE = DATA / "pakistan_boundary.geojson"
 TERRAIN_FILE = DATA / "FloodLens_Pakistan_Terrain_1km.tif"
+FORECAST_DATA_FILE = DATA / "FloodLens_Regional_Forecast_Dataset.csv"
+FORECAST_VALIDATION_FILE = DATA / "FloodLens_Forecast_Validation.csv"
+FORECAST_PERFORMANCE_FILE = DATA / "FloodLens_Final_Regional_Performance.csv"
 
 
 @st.cache_data
 def read_csv(path):
     return pd.read_csv(path)
+
+
+@st.cache_data
+def load_forecast_files():
+    """Load historical regional forecast experiment and validation outputs."""
+    required_files = [
+        FORECAST_DATA_FILE,
+        FORECAST_VALIDATION_FILE,
+        FORECAST_PERFORMANCE_FILE,
+    ]
+    missing = [path.name for path in required_files if not path.exists()]
+    if missing:
+        return None, None, None, missing
+
+    dataset = pd.read_csv(FORECAST_DATA_FILE)
+    validation = pd.read_csv(FORECAST_VALIDATION_FILE)
+    performance = pd.read_csv(FORECAST_PERFORMANCE_FILE)
+
+    return dataset, validation, performance, []
 
 
 @st.cache_data
@@ -681,6 +703,7 @@ with st.sidebar:
             "Rainfall explorer",
             "Spatial trend explorer",
             "Terrain explorer",
+            "Regional monsoon outlook",
             "About & data",
         ],
         label_visibility="collapsed",
@@ -1063,6 +1086,267 @@ elif page == "Terrain explorer":
 
 
 # ---------------------------------------------------------------------------
+# PAGE: Regional monsoon outlook
+# ---------------------------------------------------------------------------
+elif page == "Regional monsoon outlook":
+    st.markdown(
+        '<div class="fl-section">Regional Monsoon Outlook</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("### 🌧️ Historical regional monsoon forecast experiment")
+    st.info(
+        "This page presents a historical model experiment and backtest for "
+        "2001–2021. It does not provide a live 2026 forecast or a flood warning."
+    )
+
+    forecast_data, validation, performance, missing_forecast_files = load_forecast_files()
+
+    if missing_forecast_files:
+        st.warning(
+            "Add these three files to the app's data/ folder to enable this page: "
+            + ", ".join(missing_forecast_files)
+        )
+        st.code(
+            "data/FloodLens_Regional_Forecast_Dataset.csv\\n"
+            "data/FloodLens_Forecast_Validation.csv\\n"
+            "data/FloodLens_Final_Regional_Performance.csv"
+        )
+    else:
+        required_dataset_cols = {
+            "year", "region", "pre_rainfall_mm",
+            "pre_soil_moisture_mm", "monsoon_rainfall_mm"
+        }
+        required_validation_cols = {
+            "year", "region", "actual",
+            "ridge_prediction", "baseline_prediction"
+        }
+        required_performance_cols = {
+            "region", "Ridge_MAE", "Baseline_MAE",
+            "Improvement_mm", "Improvement_percent",
+            "Recommended_method"
+        }
+
+        dataset_ok = required_dataset_cols.issubset(forecast_data.columns)
+        validation_ok = required_validation_cols.issubset(validation.columns)
+        performance_ok = required_performance_cols.issubset(performance.columns)
+
+        if not (dataset_ok and validation_ok and performance_ok):
+            st.error(
+                "One or more forecast CSV files have unexpected column names. "
+                "Please use the three files exported from the FloodLens Colab experiment."
+            )
+        else:
+            for frame, numeric_cols in [
+                (forecast_data, [
+                    "year", "pre_rainfall_mm",
+                    "pre_soil_moisture_mm", "monsoon_rainfall_mm"
+                ]),
+                (validation, [
+                    "year", "actual", "ridge_prediction",
+                    "baseline_prediction"
+                ]),
+                (performance, [
+                    "Ridge_MAE", "Baseline_MAE",
+                    "Improvement_mm", "Improvement_percent"
+                ]),
+            ]:
+                for col in numeric_cols:
+                    frame[col] = pd.to_numeric(frame[col], errors="coerce")
+
+            regions = sorted(forecast_data["region"].dropna().unique().tolist())
+            selected_region = st.selectbox(
+                "Select study region",
+                regions,
+                index=regions.index("Punjab and upper Indus")
+                if "Punjab and upper Indus" in regions else 0,
+            )
+
+            region_perf = performance[
+                performance["region"] == selected_region
+            ]
+            region_validation = validation[
+                validation["region"] == selected_region
+            ].sort_values("year")
+            region_history = forecast_data[
+                forecast_data["region"] == selected_region
+            ].sort_values("year")
+
+            if region_perf.empty:
+                st.warning("No performance summary is available for this region.")
+            else:
+                perf_row = region_perf.iloc[0]
+                method = str(perf_row["Recommended_method"])
+                method_label = (
+                    "Experimental Ridge"
+                    if "Ridge" in method
+                    else "Historical baseline"
+                )
+
+                st.markdown(
+                    '<div class="fl-card"><div class="fl-card-title">'
+                    'Regional validation summary</div>',
+                    unsafe_allow_html=True,
+                )
+                m1, m2, m3, m4 = st.columns(4)
+                m1.metric("Selected method", method_label)
+                m2.metric("Recommended method MAE",
+                          f'{perf_row["Ridge_MAE"] if "Ridge" in method else perf_row["Baseline_MAE"]:.2f} mm')
+                m3.metric("Ridge MAE", f'{perf_row["Ridge_MAE"]:.2f} mm')
+                m4.metric("Baseline MAE", f'{perf_row["Baseline_MAE"]:.2f} mm')
+                st.markdown("</div>", unsafe_allow_html=True)
+
+                st.caption(
+                    f"Backtest period: 2017–2021 · "
+                    f"MAE improvement versus baseline: "
+                    f"{perf_row['Improvement_percent']:.2f}%"
+                )
+
+            st.markdown(
+                '<div class="fl-card"><div class="fl-card-title">'
+                'Historical monsoon rainfall · 2001–2021</div>',
+                unsafe_allow_html=True,
+            )
+            fig_history = px.line(
+                region_history,
+                x="year",
+                y="monsoon_rainfall_mm",
+                markers=True,
+                title=f"{selected_region}: observed June–September rainfall",
+                labels={
+                    "year": "Year",
+                    "monsoon_rainfall_mm": "Monsoon rainfall (mm)",
+                },
+            )
+            fig_history.update_traces(
+                line=dict(color=ACCENT_CYAN, width=2.2),
+                marker=dict(size=7),
+            )
+            st.plotly_chart(
+                style_fig(fig_history, height=390),
+                use_container_width=True,
+            )
+            hud_caption("HISTORICAL GPM IMERG REGIONAL MONSOON TOTALS")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+            st.markdown(
+                '<div class="fl-card"><div class="fl-card-title">'
+                'Chronological validation · 2017–2021</div>',
+                unsafe_allow_html=True,
+            )
+            if not region_validation.empty:
+                plot_validation = region_validation.melt(
+                    id_vars=["year", "actual"],
+                    value_vars=["ridge_prediction", "baseline_prediction"],
+                    var_name="method",
+                    value_name="predicted",
+                )
+                plot_validation["method"] = plot_validation["method"].map({
+                    "ridge_prediction": "Ridge",
+                    "baseline_prediction": "Historical baseline",
+                })
+                fig_validation = go.Figure()
+                fig_validation.add_trace(go.Scatter(
+                    x=region_validation["year"],
+                    y=region_validation["actual"],
+                    mode="lines+markers",
+                    name="Observed GPM",
+                    line=dict(color="#FFFFFF", width=2.5),
+                    marker=dict(size=8),
+                ))
+                for method_name, color in [
+                    ("Ridge", ACCENT_CYAN),
+                    ("Historical baseline", ACCENT_ORANGE),
+                ]:
+                    method_rows = plot_validation[
+                        plot_validation["method"] == method_name
+                    ]
+                    fig_validation.add_trace(go.Scatter(
+                        x=method_rows["year"],
+                        y=method_rows["predicted"],
+                        mode="lines+markers",
+                        name=method_name,
+                        line=dict(color=color, width=2, dash="dash"),
+                        marker=dict(size=7),
+                    ))
+                fig_validation.update_layout(
+                    xaxis_title="Test year",
+                    yaxis_title="June–September rainfall (mm)",
+                )
+                st.plotly_chart(
+                    style_fig(fig_validation, height=420),
+                    use_container_width=True,
+                )
+                st.dataframe(
+                    region_validation[
+                        ["year", "actual", "ridge_prediction", "baseline_prediction"]
+                    ].round(2),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+            else:
+                st.warning("No chronological validation rows were found for this region.")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+            st.markdown(
+                '<div class="fl-card"><div class="fl-card-title">'
+                'Regional model comparison</div>',
+                unsafe_allow_html=True,
+            )
+            comparison = performance.copy()
+            comparison = comparison.sort_values("Ridge_MAE")
+            fig_compare = go.Figure()
+            fig_compare.add_trace(go.Bar(
+                x=comparison["region"],
+                y=comparison["Ridge_MAE"],
+                name="Ridge MAE",
+                marker_color=ACCENT_CYAN,
+            ))
+            fig_compare.add_trace(go.Bar(
+                x=comparison["region"],
+                y=comparison["Baseline_MAE"],
+                name="Historical baseline MAE",
+                marker_color=ACCENT_ORANGE,
+            ))
+            fig_compare.update_layout(
+                barmode="group",
+                xaxis_title="Study region",
+                yaxis_title="Mean absolute error (mm)",
+            )
+            st.plotly_chart(
+                style_fig(fig_compare, height=420),
+                use_container_width=True,
+            )
+            st.dataframe(
+                comparison[
+                    ["region", "Ridge_MAE", "Baseline_MAE",
+                     "Improvement_percent", "Recommended_method"]
+                ].round(2),
+                use_container_width=True,
+                hide_index=True,
+            )
+            st.markdown("</div>", unsafe_allow_html=True)
+
+            st.warning(
+                "Interpretation: validation covers only five held-out years "
+                "(2017–2021). Regional performance is preliminary. The model "
+                "must not be interpreted as an operational flood-warning system."
+            )
+
+            with st.expander("Inspect the model input dataset"):
+                st.dataframe(
+                    forecast_data[forecast_data["region"] == selected_region],
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+            st.download_button(
+                "Download regional forecast dataset",
+                data=forecast_data.to_csv(index=False).encode("utf-8"),
+                file_name="FloodLens_Regional_Forecast_Dataset.csv",
+                mime="text/csv",
+            )
+
+# ---------------------------------------------------------------------------
 # PAGE: About & data
 # ---------------------------------------------------------------------------
 elif page == "About & data":
@@ -1096,7 +1380,10 @@ elif page == "About & data":
         "Pakistan_GPM_Rainfall_2001_2024.csv\n"
         "FloodLens_Pakistan_Pixel_Trends_2001_2024.csv\n"
         "pakistan_boundary.geojson\n"
-        "FloodLens_Pakistan_Terrain_1km.tif  # optional"
+        "FloodLens_Pakistan_Terrain_1km.tif  # optional\\n"
+        "FloodLens_Regional_Forecast_Dataset.csv\\n"
+        "FloodLens_Forecast_Validation.csv\\n"
+        "FloodLens_Final_Regional_Performance.csv"
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
