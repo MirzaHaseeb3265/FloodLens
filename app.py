@@ -32,6 +32,17 @@ TEXT_LIGHT = "#E6F1FF"
 TEXT_MUTED = "#8CA3C4"
 GRID_FAINT = "rgba(255,255,255,0.08)"
 
+# Palette requested for the future-outlook section
+FUTURE_PANEL = "#141F30"
+FUTURE_BG2 = "#101827"
+FUTURE_CYAN = "#27D9F2"
+FUTURE_BLUE = "#648CFF"
+FUTURE_VIOLET = "#A78BFA"
+FUTURE_TEXT = "#F1F5F9"
+FUTURE_MUTED = "#94A3B8"
+FUTURE_POS = "#34D399"
+FUTURE_NEG = "#FB7185"
+
 
 def inject_css():
     """Inject the whole mission-control theme in one place."""
@@ -52,7 +63,6 @@ def inject_css():
             --muted: #8CA3C4;
         }
 
-        /* -------- App background: deep-space gradient + faint star grid -------- */
         .stApp {
             background:
                 radial-gradient(1200px 600px at 15% -10%, rgba(11,61,145,0.35), transparent 60%),
@@ -89,11 +99,9 @@ def inject_css():
             z-index: 0;
         }
 
-        /* -------- Hide default Streamlit chrome -------- */
         #MainMenu, header, footer { visibility: hidden; }
         .block-container { padding-top: 1.2rem; padding-bottom: 2rem; max-width: 1350px; }
 
-        /* -------- Typography -------- */
         h1, h2, h3, h4, h5, h6, .stSubheader {
             font-family: 'Orbitron', 'Rajdhani', sans-serif !important;
             letter-spacing: 0.06em;
@@ -101,7 +109,6 @@ def inject_css():
         }
         p, span, label, div, .stMarkdown { color: var(--text); }
 
-        /* -------- Hero header -------- */
         .fl-hero {
             position: relative;
             padding: 26px 30px 22px 30px;
@@ -165,7 +172,6 @@ def inject_css():
             color: #FF8A73;
         }
 
-        /* -------- Glass cards -------- */
         .fl-card {
             background: var(--panel);
             border: 1px solid var(--panel-border);
@@ -190,7 +196,6 @@ def inject_css():
             margin-bottom: 14px;
         }
 
-        /* -------- HUD metric cards (override st.metric) -------- */
         div[data-testid="stMetric"] {
             background: var(--panel);
             border: 1px solid var(--panel-border);
@@ -221,7 +226,6 @@ def inject_css():
             text-shadow: 0 0 12px rgba(0,229,255,0.45);
         }
 
-        /* -------- Sidebar: mission control menu -------- */
         section[data-testid="stSidebar"] {
             background: linear-gradient(180deg, #070E1F 0%, #050A18 100%);
             border-right: 1px solid rgba(0,229,255,0.15);
@@ -251,7 +255,6 @@ def inject_css():
             text-transform: uppercase;
             margin-bottom: 18px;
         }
-        /* Radio as menu */
         section[data-testid="stSidebar"] div[role="radiogroup"] > label {
             display: block;
             padding: 10px 14px;
@@ -278,7 +281,6 @@ def inject_css():
         section[data-testid="stSidebar"] div[role="radiogroup"] > label[data-checked="true"] * {
             color: var(--cyan) !important;
         }
-        /* Hide default radio dot in sidebar */
         section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-child {
             display: none;
         }
@@ -288,7 +290,6 @@ def inject_css():
             letter-spacing: 0.08em;
         }
 
-        /* -------- Inputs & controls -------- */
         .stSlider label, .stSelectbox label, .stNumberInput label,
         .stRadio > label, .stCheckbox label, .stTextInput label {
             font-family: 'Rajdhani', sans-serif !important;
@@ -330,7 +331,6 @@ def inject_css():
         }
         hr { border-color: rgba(0,229,255,0.15); }
 
-        /* -------- HUD caption under charts -------- */
         .fl-hud-caption {
             font-family: 'Rajdhani', sans-serif;
             font-size: 11px;
@@ -342,7 +342,6 @@ def inject_css():
             border-left: 2px solid var(--cyan);
         }
 
-        /* -------- Data source badges -------- */
         .fl-badge {
             display: inline-block;
             padding: 8px 14px;
@@ -363,7 +362,6 @@ def inject_css():
             box-shadow: 0 0 12px rgba(252,61,33,0.15);
         }
 
-        /* -------- Section heading -------- */
         .fl-section {
             font-family: 'Orbitron', sans-serif;
             font-size: 14px;
@@ -375,13 +373,40 @@ def inject_css():
             border-bottom: 1px solid rgba(0,229,255,0.2);
         }
 
-        /* -------- Animations -------- */
+        /* -------- Future outlook panel styling -------- */
+        .fl-future-panel {
+            background: linear-gradient(160deg, #141F30 0%, #101827 100%);
+            border: 1px solid rgba(39,217,242,0.25);
+            border-radius: 16px;
+            padding: 22px 24px;
+            margin-bottom: 18px;
+            box-shadow: 0 0 30px rgba(39,217,242,0.10);
+        }
+        .fl-future-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 15px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #27D9F2;
+            margin-bottom: 16px;
+        }
+        .fl-future-disclaimer {
+            background: rgba(251,113,133,0.08);
+            border-left: 3px solid #FB7185;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #F1F5F9;
+            margin: 14px 0;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(6px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* -------- Responsive -------- */
         @media (max-width: 900px) {
             .fl-title { font-size: 30px; letter-spacing: 0.2em; }
             .fl-sub { font-size: 12px; }
@@ -419,7 +444,6 @@ def style_fig(fig, height=None, title=None):
             font=dict(color=TEXT_LIGHT),
         ),
     )
-    # Grid styling for Cartesian axes
     axis_style = dict(
         showgrid=True,
         gridcolor=GRID_FAINT,
@@ -430,7 +454,6 @@ def style_fig(fig, height=None, title=None):
     )
     fig.update_xaxes(**axis_style)
     fig.update_yaxes(**axis_style)
-    # Colorbars
     for trace in fig.data:
         if getattr(trace, "colorbar", None) is not None:
             trace.colorbar.tickfont = dict(color=TEXT_LIGHT)
@@ -448,7 +471,7 @@ def hud_caption(text):
 
 
 # ---------------------------------------------------------------------------
-# Data paths & loaders (unchanged logic)
+# Data paths & loaders
 # ---------------------------------------------------------------------------
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
@@ -500,9 +523,8 @@ def make_forecast_template(regions, forecast_year):
 def run_regional_forecast(history, performance, future_inputs, alpha=10.0):
     """Fit the historical Ridge experiment and produce regional estimates.
 
-    Numeric predictors are standardized; region is one-hot encoded. The
-    intercept is unpenalized and Ridge coefficients use alpha=10, matching
-    the original experiment's preprocessing/model setup.
+    Unchanged from the original experiment (numeric predictors standardized,
+    region one-hot encoded, unpenalized intercept, Ridge alpha=10).
     """
     feature_cols = ["pre_rainfall_mm", "pre_soil_moisture_mm"]
     target_col = "monsoon_rainfall_mm"
@@ -567,7 +589,6 @@ def read_boundary(path):
 
 
 def add_boundary_lines(fig, geojson, color="#00E5FF", width=1.4):
-    """Add Pakistan's GeoJSON outline to a Plotly longitude/latitude figure."""
     if geojson.get("type") == "FeatureCollection":
         geometries = [
             feature.get("geometry")
@@ -735,6 +756,297 @@ def show_missing_files():
 
 
 # ---------------------------------------------------------------------------
+# NEW HELPERS: Regional GPM outlook computations
+# ---------------------------------------------------------------------------
+@st.cache_data
+def load_regional_gpm_history():
+    """Load annual regional June–September GPM rainfall totals.
+
+    Reuses the existing regional forecast dataset (FloodLens_Regional_Forecast_Dataset.csv),
+    which contains the historical regional monsoon totals used by the Ridge model.
+    Returns a long dataframe with columns: year, region, monsoon_rainfall_mm.
+    """
+    if not FORECAST_DATA_FILE.exists():
+        return None
+    df = read_csv(FORECAST_DATA_FILE)
+    required = {"year", "region", "monsoon_rainfall_mm"}
+    if not required.issubset(df.columns):
+        return None
+    out = df[["year", "region", "monsoon_rainfall_mm"]].copy()
+    out["year"] = pd.to_numeric(out["year"], errors="coerce")
+    out["monsoon_rainfall_mm"] = pd.to_numeric(
+        out["monsoon_rainfall_mm"], errors="coerce"
+    )
+    out = out.dropna(subset=["year", "region", "monsoon_rainfall_mm"])
+    out["year"] = out["year"].astype(int)
+    return out.sort_values(["region", "year"]).reset_index(drop=True)
+
+
+def fit_linear_trend(series_years, series_values):
+    """Simple OLS: y = slope * year + intercept. Returns (slope, intercept, r2)."""
+    years = np.asarray(series_years, dtype=float)
+    values = np.asarray(series_values, dtype=float)
+    if len(years) < 2 or np.allclose(years, years[0]):
+        return np.nan, np.nan, np.nan
+    slope, intercept = np.polyfit(years, values, 1)
+    predicted = slope * years + intercept
+    ss_res = float(np.sum((values - predicted) ** 2))
+    ss_tot = float(np.sum((values - np.mean(values)) ** 2))
+    r2 = 1.0 - ss_res / ss_tot if ss_tot > 0 else np.nan
+    return float(slope), float(intercept), float(r2)
+
+
+def compute_projection(regional_hist, region, target_year, method):
+    """Return a dict of projection stats for one region/method/target year."""
+    sub = regional_hist[regional_hist["region"] == region].sort_values("year")
+    if sub.empty:
+        return None
+    years = sub["year"].to_numpy()
+    values = sub["monsoon_rainfall_mm"].to_numpy()
+    n = len(years)
+    slope, intercept, r2 = fit_linear_trend(years, values)
+
+    if method == "Linear trend projection":
+        estimate = slope * target_year + intercept if not np.isnan(slope) else np.nan
+    elif method == "Recent five-year average":
+        last5 = values[-5:] if n >= 1 else values
+        estimate = float(np.mean(last5))
+    else:  # Long-term historical average
+        estimate = float(np.mean(values))
+
+    recent5 = float(np.mean(values[-5:])) if n >= 1 else np.nan
+    return {
+        "region": region,
+        "method": method,
+        "target_year": int(target_year),
+        "estimated_mm": float(max(estimate, 0.0)) if not np.isnan(estimate) else np.nan,
+        "trend_mm_per_year": slope,
+        "trend_r2": r2,
+        "historical_mean_mm": float(np.mean(values)),
+        "recent5_mean_mm": recent5,
+        "n_years": int(n),
+        "first_year": int(years.min()),
+        "last_year": int(years.max()),
+    }
+
+
+def build_future_outlook_chart(regional_hist, region, target_year, method):
+    """Plotly chart: observed rainfall + trend line + extension to target_year."""
+    sub = regional_hist[regional_hist["region"] == region].sort_values("year")
+    if sub.empty:
+        return None
+    years = sub["year"].to_numpy().astype(float)
+    values = sub["monsoon_rainfall_mm"].to_numpy().astype(float)
+    slope, intercept, _ = fit_linear_trend(years, values)
+
+    fig = go.Figure()
+
+    # Observed rainfall
+    fig.add_trace(go.Scatter(
+        x=years, y=values,
+        mode="lines+markers",
+        name="Observed GPM Jun–Sep total",
+        line=dict(color=FUTURE_CYAN, width=2.4),
+        marker=dict(size=8, color=FUTURE_CYAN,
+                    line=dict(color="#FFFFFF", width=1)),
+    ))
+
+    # Trend line across historical span
+    if not np.isnan(slope):
+        trend_years = np.array([years.min(), years.max()])
+        trend_vals = slope * trend_years + intercept
+        fig.add_trace(go.Scatter(
+            x=trend_years, y=trend_vals,
+            mode="lines",
+            name=f"Linear trend ({slope:+.2f} mm/year)",
+            line=dict(color=FUTURE_VIOLET, width=2.2, dash="dash"),
+        ))
+
+        # Extension to target year
+        if target_year > years.max():
+            ext_years = np.array([years.max(), float(target_year)])
+            ext_vals = slope * ext_years + intercept
+            fig.add_trace(go.Scatter(
+                x=ext_years, y=ext_vals,
+                mode="lines+markers",
+                name=f"Trend extension → {int(target_year)}",
+                line=dict(color=FUTURE_BLUE, width=2.4, dash="dot"),
+                marker=dict(size=10, symbol="diamond", color=FUTURE_BLUE),
+            ))
+
+    # Recent 5-year mean line
+    recent5 = float(np.mean(values[-5:]))
+    fig.add_trace(go.Scatter(
+        x=[years.min(), max(years.max(), float(target_year))],
+        y=[recent5, recent5],
+        mode="lines",
+        name=f"Recent 5-yr mean ({recent5:.0f} mm)",
+        line=dict(color=FUTURE_POS, width=1.5, dash="longdash"),
+    ))
+
+    # Historical mean line
+    hist_mean = float(np.mean(values))
+    fig.add_trace(go.Scatter(
+        x=[years.min(), max(years.max(), float(target_year))],
+        y=[hist_mean, hist_mean],
+        mode="lines",
+        name=f"Historical mean ({hist_mean:.0f} mm)",
+        line=dict(color=FUTURE_MUTED, width=1.2, dash="dot"),
+    ))
+
+    # Vertical marker: last historical observation
+    fig.add_vline(
+        x=float(years.max()),
+        line=dict(color=FUTURE_NEG, width=1.5, dash="dash"),
+        annotation_text="Last historical obs.",
+        annotation_position="top",
+        annotation_font=dict(color=FUTURE_NEG, size=11),
+    )
+
+    fig.update_layout(
+        xaxis_title="Year",
+        yaxis_title="June–September rainfall (mm)",
+        legend=dict(orientation="h", y=-0.2, x=0),
+        height=470,
+    )
+    return style_fig(fig, height=470)
+
+
+def render_future_outlook(regional_hist, forecast_data, performance, validation):
+    """The new 'Future Monsoon Outlook – NASA GPM Historical Projections' section."""
+    st.markdown(
+        '<div class="fl-future-panel">'
+        '<div class="fl-future-title">🛰️ Future Monsoon Outlook – NASA GPM Historical Projections</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="fl-future-disclaimer">'
+        "These estimates are exploratory statistical projections based on historical "
+        "NASA GPM rainfall observations. They assume that historical rainfall patterns "
+        "remain informative about future conditions. Natural climate variability and "
+        "changing environmental conditions may produce different outcomes. These "
+        "estimates are not operational weather forecasts or flood warnings."
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    regions = sorted(regional_hist["region"].dropna().unique().tolist())
+    if not regions:
+        st.warning("No regional historical GPM rainfall records available.")
+        st.markdown("</div>", unsafe_allow_html=True)
+        return
+
+    last_year = int(regional_hist["year"].max())
+    default_target = max(2027, last_year + 1)
+    target_min = max(last_year + 1, 2027)
+    target_max = max(target_min, 2035)
+
+    c1, c2, c3 = st.columns([2, 1.4, 2])
+    with c1:
+        selected_region = st.selectbox(
+            "Study region",
+            regions,
+            index=regions.index("Punjab and upper Indus")
+            if "Punjab and upper Indus" in regions else 0,
+            key="future_outlook_region",
+        )
+    with c2:
+        target_year = st.number_input(
+            "Future year",
+            min_value=int(target_min),
+            max_value=int(target_max),
+            value=int(min(default_target, target_max)),
+            step=1,
+            key="future_outlook_year",
+        )
+    with c3:
+        method = st.selectbox(
+            "Projection method",
+            [
+                "Linear trend projection",
+                "Recent five-year average",
+                "Long-term historical average",
+            ],
+            key="future_outlook_method",
+        )
+
+    method_notes = {
+        "Linear trend projection": "Assumes the historical linear trend continues unchanged into the future.",
+        "Recent five-year average": "Reference estimate based on the most recent 5 observed years. Not a forecast.",
+        "Long-term historical average": "Climatological reference: mean of the complete available historical record.",
+    }
+    st.caption(f"**Method note:** {method_notes[method]}")
+
+    proj = compute_projection(regional_hist, selected_region, int(target_year), method)
+    if proj is None:
+        st.error("Could not compute projection for the selected region.")
+        st.markdown("</div>", unsafe_allow_html=True)
+        return
+
+    # KPI cards
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric(f"Estimated Jun–Sep rainfall ({int(target_year)})",
+              f'{proj["estimated_mm"]:,.0f} mm')
+    k2.metric("Historical trend",
+              f'{proj["trend_mm_per_year"]:+.2f} mm/yr'
+              if not np.isnan(proj["trend_mm_per_year"]) else "n/a")
+    k3.metric("Recent 5-yr average", f'{proj["recent5_mean_mm"]:,.0f} mm')
+    k4.metric("Historical average", f'{proj["historical_mean_mm"]:,.0f} mm')
+
+    st.caption(
+        f"Historical record: **{proj['first_year']}–{proj['last_year']}** "
+        f"(**{proj['n_years']} years** used) · trend R² = "
+        f"{proj['trend_r2']:.3f}" if not np.isnan(proj["trend_r2"])
+        else f"Historical record: **{proj['first_year']}–{proj['last_year']}** "
+             f"(**{proj['n_years']} years** used)"
+    )
+
+    # Chart
+    chart = build_future_outlook_chart(regional_hist, selected_region,
+                                       int(target_year), method)
+    if chart is not None:
+        st.plotly_chart(chart, use_container_width=True,
+                        key="future_outlook_chart")
+    hud_caption("OBSERVED GPM JUN–SEP TOTALS · TREND · RECENT-5 MEAN · HISTORICAL MEAN · TARGET-YEAR EXTENSION")
+
+    # Comparison table — all four regions
+    st.markdown(
+        '<div class="fl-card-title" style="margin-top:14px;">'
+        'All-region projection comparison</div>',
+        unsafe_allow_html=True,
+    )
+    rows = []
+    for r in regions:
+        p = compute_projection(regional_hist, r, int(target_year), method)
+        if p is not None:
+            rows.append({
+                "Region": r,
+                f"Estimated {int(target_year)} (mm)": round(p["estimated_mm"], 1)
+                if not np.isnan(p["estimated_mm"]) else None,
+                "Trend (mm/yr)": round(p["trend_mm_per_year"], 3)
+                if not np.isnan(p["trend_mm_per_year"]) else None,
+                "Recent 5-yr mean (mm)": round(p["recent5_mean_mm"], 1),
+                "Historical mean (mm)": round(p["historical_mean_mm"], 1),
+                "Years used": p["n_years"],
+            })
+    comp_df = pd.DataFrame(rows)
+    st.dataframe(comp_df, use_container_width=True, hide_index=True,
+                 key="future_outlook_table")
+
+    # CSV download
+    if not comp_df.empty:
+        st.download_button(
+            "⬇️ Download projection results (CSV)",
+            data=comp_df.to_csv(index=False).encode("utf-8"),
+            file_name=f"FloodLens_Monsoon_Projections_{int(target_year)}_{method.replace(' ', '_')}.csv",
+            mime="text/csv",
+            key="future_outlook_download",
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------------------
 # Boot the theme
 # ---------------------------------------------------------------------------
 inject_css()
@@ -812,7 +1124,6 @@ if page == "National overview":
             .rename(columns={"monthly_rainfall_mm": "annual_rainfall_mm"})
         )
 
-        # ---- Telemetry cards row 1 ----
         st.markdown('<div class="fl-card"><div class="fl-card-title">Telemetry · Dataset</div>', unsafe_allow_html=True)
         c1, c2, c3 = st.columns(3)
         c1.metric("Monthly observations", f"{len(monthly):,}")
@@ -826,7 +1137,6 @@ if page == "National overview":
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ---- Annual rainfall line chart ----
         st.markdown('<div class="fl-card"><div class="fl-card-title">Annual Signal</div>', unsafe_allow_html=True)
         fig = px.line(
             annual, x="year", y="annual_rainfall_mm",
@@ -844,7 +1154,6 @@ if page == "National overview":
         hud_caption("ANNUAL NATIONAL RAINFALL TOTALS · GPM IMERG MONTHLY V07")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ---- Telemetry cards row 2: national trend ----
         st.markdown("#### National trend result")
         st.markdown('<div class="fl-card"><div class="fl-card-title">Telemetry · Trend Diagnostics</div>', unsafe_allow_html=True)
         a, b, c = st.columns(3)
@@ -876,7 +1185,6 @@ elif page == "Rainfall explorer":
         min_year = int(monthly["year"].min())
         max_year = int(monthly["year"].max())
 
-        # ---- Control panel card ----
         st.markdown('<div class="fl-card"><div class="fl-card-title">Control Panel</div>', unsafe_allow_html=True)
         selected_years = st.slider(
             "Select year range", min_year, max_year, (min_year, max_year)
@@ -887,7 +1195,6 @@ elif page == "Rainfall explorer":
             monthly["year"].between(selected_years[0], selected_years[1])
         ]
 
-        # ---- Monthly time series ----
         st.markdown('<div class="fl-card"><div class="fl-card-title">Monthly Signal</div>', unsafe_allow_html=True)
         fig = px.line(
             subset, x="date", y="monthly_rainfall_mm",
@@ -904,7 +1211,6 @@ elif page == "Rainfall explorer":
         hud_caption("MONTHLY RAINFALL THROUGH TIME · GPM IMERG")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ---- Heatmap ----
         heat = subset.pivot_table(
             index="year", columns="month",
             values="monthly_rainfall_mm", aggfunc="mean",
@@ -927,7 +1233,6 @@ elif page == "Rainfall explorer":
         hud_caption("CALENDAR-MONTH MEAN RAINFALL · DEEP-NAVY → CYAN → WHITE SCALE")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ---- Anomalies ----
         baseline = monthly[monthly["year"].between(2001, 2020)].copy()
         baseline["month"] = baseline["date"].dt.month
         monthly["calendar_month"] = monthly["date"].dt.month
@@ -945,7 +1250,6 @@ elif page == "Rainfall explorer":
             anomaly_subset, x="date", y="anomaly_mm",
             title="Monthly rainfall anomalies (relative to 2001–2020 calendar-month mean)",
         )
-        # Positive cyan, negative orange/red
         fig_anom.update_traces(
             marker=dict(
                 color=np.where(
@@ -975,7 +1279,6 @@ elif page == "Spatial trend explorer":
             "This file contains each grid cell's Sen's slope and adjusted p-value."
         )
     else:
-        # ---- Control panel ----
         st.markdown('<div class="fl-card"><div class="fl-card-title">Control Panel</div>', unsafe_allow_html=True)
         mode = st.radio(
             "Map layer",
@@ -984,7 +1287,6 @@ elif page == "Spatial trend explorer":
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ---- Map ----
         st.markdown('<div class="fl-card"><div class="fl-card-title">Pixel Map</div>', unsafe_allow_html=True)
         st.plotly_chart(
             make_trend_map(trends, boundary, mode),
@@ -993,7 +1295,6 @@ elif page == "Spatial trend explorer":
         hud_caption("PIXEL-LEVEL SEN'S SLOPE · PAKISTAN BOUNDARY OVERLAY")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ---- Telemetry ----
         st.markdown('<div class="fl-card"><div class="fl-card-title">Telemetry · Pixel Counts</div>', unsafe_allow_html=True)
         st.write(f"Grid cells shown: **{len(trends):,}**")
         if "adjusted_p" in trends.columns:
@@ -1059,7 +1360,6 @@ elif page == "Terrain explorer":
         step = max(1, int(max(elevation.shape) / max_side))
         small = elevation[::step, ::step]
 
-        # ---- Telemetry ----
         st.markdown('<div class="fl-card"><div class="fl-card-title">Telemetry · Elevation</div>', unsafe_allow_html=True)
         st.metric(
             "Raster elevation range",
@@ -1067,7 +1367,6 @@ elif page == "Terrain explorer":
         )
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ---- DEM heatmap ----
         st.markdown('<div class="fl-card"><div class="fl-card-title">Digital Elevation Model</div>', unsafe_allow_html=True)
         fig = px.imshow(
             small, origin="upper", aspect="auto",
@@ -1086,7 +1385,6 @@ elif page == "Terrain explorer":
         hud_caption("SRTM 1-KM DEM · HIGH-TECH TERRAIN SCALE")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ---- 3D terrain ----
         st.markdown('<div class="fl-card"><div class="fl-card-title">3D Terrain Surface</div>', unsafe_allow_html=True)
         if st.checkbox("Show interactive 3D terrain surface"):
             rows, cols = small.shape
@@ -1159,31 +1457,53 @@ elif page == "Terrain explorer":
 
 
 # ---------------------------------------------------------------------------
-# PAGE: Regional monsoon outlook
+# PAGE: Regional monsoon outlook  (UPGRADED)
 # ---------------------------------------------------------------------------
 elif page == "Regional monsoon outlook":
     st.markdown(
         '<div class="fl-section">Regional Monsoon Outlook</div>',
         unsafe_allow_html=True,
     )
-    st.markdown("### 🌧️ Historical validation + future monsoon estimates")
-    st.info(
-        "This page presents a historical model experiment and backtest for "
-        "2001–2021, plus an upload-driven tool for experimental future-year "
-        "monsoon estimates. It does not automatically fetch current predictors "
-        "or provide an official forecast or flood warning."
-    )
+    st.markdown("### 🌧️ Regional monsoon outlook")
 
     forecast_data, validation, performance, missing_forecast_files = load_forecast_files()
 
+    # -----------------------------------------------------------------------
+    # PRIMARY FEATURE: Future Monsoon Outlook from historical GPM data
+    # -----------------------------------------------------------------------
+    regional_hist = load_regional_gpm_history()
+    if regional_hist is not None and not regional_hist.empty:
+        render_future_outlook(regional_hist, forecast_data, performance, validation)
+    else:
+        st.warning(
+            "The regional historical GPM rainfall file "
+            "(FloodLens_Regional_Forecast_Dataset.csv) was not found or is missing "
+            "required columns (year, region, monsoon_rainfall_mm). "
+            "Add it to the data/ folder to enable the future outlook."
+        )
+
+    # -----------------------------------------------------------------------
+    # PRESERVED: Historical Ridge experiment & validation (unchanged)
+    # -----------------------------------------------------------------------
+    st.markdown(
+        '<div class="fl-section" style="margin-top:24px;">'
+        'Historical Ridge Experiment & Backtesting (2001–2021)</div>',
+        unsafe_allow_html=True,
+    )
+    st.info(
+        "This section preserves the original Ridge-regression experiment and "
+        "its 2017–2021 backtest. It is optional and advanced; the primary future "
+        "outlook above does not depend on it."
+    )
+
     if missing_forecast_files:
         st.warning(
-            "Add these three files to the app's data/ folder to enable this page: "
+            "Add these three files to the app's data/ folder to enable this section: "
             + ", ".join(missing_forecast_files)
         )
         st.code(
-            "data/FloodLens_Regional_Forecast_Dataset.csv\\n"
-            "data/FloodLens_Forecast_Validation.csv\\n"
+            "data/FloodLens_Regional_Forecast_Dataset.csv\n"
+            "data/FloodLens_Forecast_Validation.csv\n"
             "data/FloodLens_Final_Regional_Performance.csv"
         )
     else:
@@ -1234,6 +1554,7 @@ elif page == "Regional monsoon outlook":
                 regions,
                 index=regions.index("Punjab and upper Indus")
                 if "Punjab and upper Indus" in regions else 0,
+                key="ridge_region_select",
             )
 
             region_perf = performance[
@@ -1246,144 +1567,125 @@ elif page == "Regional monsoon outlook":
                 forecast_data["region"] == selected_region
             ].sort_values("year")
 
-            # ---------------------------------------------------------------
-            # FUTURE MONSOON FORECAST: user supplies same-definition inputs
-            # ---------------------------------------------------------------
-            st.markdown(
-                '<div class="fl-card"><div class="fl-card-title">'
-                '🛰️ Generate a regional monsoon estimate</div>',
-                unsafe_allow_html=True,
-            )
-            st.write(
-                "Upload March–May predictor values for a future monsoon year. "
-                "The app will fit the same historical Ridge experiment and "
-                "apply the region-specific method selected by the backtest."
-            )
-            st.info(
-                "Required inputs: March–May TerraClimate precipitation total "
-                "(pre_rainfall_mm) and mean soil moisture "
-                "(pre_soil_moisture_mm), one row per study region. The current "
-                "historical training file ends in 2021; it does not contain "
-                "2026 or 2027 predictor observations."
-            )
-            default_forecast_year = max(2027, int(pd.to_numeric(
-                forecast_data["year"], errors="coerce").max()) + 1)
-            template = make_forecast_template(regions, default_forecast_year)
-            st.download_button(
-                "Download future-input CSV template",
-                data=template.to_csv(index=False).encode("utf-8"),
-                file_name=f"FloodLens_Monsoon_Inputs_{default_forecast_year}.csv",
-                mime="text/csv",
-                key="future_forecast_template",
-            )
-            forecast_upload = st.file_uploader(
-                "Upload March–May regional predictor CSV",
-                type=["csv"],
-                key="future_monsoon_predictors",
-                help=("Required columns: year, region, pre_rainfall_mm, "
-                      "pre_soil_moisture_mm. Include all four regions once."),
-            )
-            input_mode = st.radio(
-                "How should these inputs be interpreted?",
-                ["Observed March–May data", "Scenario assumptions"],
-                horizontal=True,
-                key="forecast_input_mode",
-            )
-            if forecast_upload is not None:
-                try:
-                    future_inputs = pd.read_csv(forecast_upload)
-                    required_future_cols = {
-                        "year", "region", "pre_rainfall_mm", "pre_soil_moisture_mm"
-                    }
-                    missing_future_cols = required_future_cols - set(future_inputs.columns)
-                    if missing_future_cols:
-                        st.error("Missing input columns: " + ", ".join(sorted(missing_future_cols)))
-                    else:
-                        future_inputs = future_inputs[list(required_future_cols)].copy()
-                        future_inputs["year"] = pd.to_numeric(future_inputs["year"], errors="coerce")
-                        for col in ["pre_rainfall_mm", "pre_soil_moisture_mm"]:
-                            future_inputs[col] = pd.to_numeric(future_inputs[col], errors="coerce")
-                        future_inputs["region"] = future_inputs["region"].astype(str).str.strip()
-                        history_end = int(pd.to_numeric(forecast_data["year"], errors="coerce").max())
-                        input_years = future_inputs["year"].dropna().unique()
-                        input_regions = future_inputs["region"].tolist()
-                        valid_regions = set(regions)
-                        problems = []
-                        if len(input_years) != 1:
-                            problems.append("Use one common forecast year in all rows.")
-                        elif input_years[0] <= history_end:
-                            problems.append(f"Forecast year must be after the training period ending {history_end}.")
-                        if len(input_regions) != len(regions) or set(input_regions) != valid_regions:
-                            problems.append("Include each of the four study regions exactly once, with exact region names.")
-                        if future_inputs["region"].duplicated().any():
-                            problems.append("Duplicate region rows were found.")
-                        if future_inputs[["pre_rainfall_mm", "pre_soil_moisture_mm"]].isna().any().any():
-                            problems.append("Predictor values must be numeric and non-empty.")
-                        if (future_inputs[["pre_rainfall_mm", "pre_soil_moisture_mm"]] < 0).any().any():
-                            problems.append("Predictor values cannot be negative.")
-                        if problems:
-                            for problem in problems:
-                                st.error(problem)
-                        else:
-                            forecast_result = run_regional_forecast(
-                                forecast_data, performance, future_inputs
-                            )
-                            forecast_year = int(input_years[0])
-                            mode_note = (
-                                "Scenario projection only — inputs are assumptions, not observed measurements."
-                                if input_mode == "Scenario assumptions"
-                                else "Model estimate based on user-supplied observed March–May predictors."
-                            )
-                            st.success(f"Regional monsoon estimates generated for {forecast_year}.")
-                            st.caption(mode_note)
-                            selected_forecast = forecast_result[
-                                forecast_result["region"] == selected_region
-                            ]
-                            if not selected_forecast.empty:
-                                selected_row = selected_forecast.iloc[0]
-                                f1, f2, f3 = st.columns(3)
-                                f1.metric("Selected regional estimate", f'{selected_row["selected_prediction_mm"]:,.1f} mm')
-                                f2.metric("Ridge estimate", f'{selected_row["ridge_prediction_mm"]:,.1f} mm')
-                                f3.metric("Historical baseline", f'{selected_row["baseline_prediction_mm"]:,.1f} mm')
-                                st.caption(
-                                    f"Selected method: {selected_row['recommended_method']} · "
-                                    "Target: June–September total rainfall"
-                                )
-                            display_forecast = forecast_result[[
-                                "year", "region", "pre_rainfall_mm", "pre_soil_moisture_mm",
-                                "ridge_prediction_mm", "baseline_prediction_mm",
-                                "recommended_method", "selected_prediction_mm"
-                            ]].sort_values("region")
-                            st.dataframe(display_forecast.round(2), use_container_width=True, hide_index=True)
-                            fig_future = px.bar(
-                                display_forecast,
-                                x="region", y="selected_prediction_mm",
-                                color="recommended_method", text_auto=".1f",
-                                title=f"{forecast_year} experimental regional monsoon estimates",
-                                labels={"region": "Study region", "selected_prediction_mm": "Estimated rainfall (mm)"},
-                            )
-                            st.plotly_chart(style_fig(fig_future, height=390), use_container_width=True)
-                            st.download_button(
-                                "Download regional estimates",
-                                data=display_forecast.to_csv(index=False).encode("utf-8"),
-                                file_name=f"FloodLens_Regional_Monsoon_Estimates_{forecast_year}.csv",
-                                mime="text/csv",
-                                key="download_generated_forecast",
-                            )
-                            st.warning(
-                                "Experimental estimate only. The model has five held-out "
-                                "validation years per region, limited overall improvement, "
-                                "and no calibrated prediction interval. It is not a flood warning."
-                            )
-                except Exception as exc:
-                    st.error(f"Could not process the predictor file: {exc}")
-            else:
-                st.caption(
-                    "No forecast has been generated yet. Download the template, "
-                    "fill it with real March–May regional predictor values, and upload it here."
+            # -------- Optional Ridge-based upload tool (advanced) --------
+            with st.expander("🔬 Advanced · Upload March–May predictors for Ridge experiment"):
+                st.write(
+                    "Upload March–May predictor values for a future monsoon year. "
+                    "The app will fit the same historical Ridge experiment and "
+                    "apply the region-specific method selected by the backtest."
                 )
-            st.markdown("</div>", unsafe_allow_html=True)
+                st.info(
+                    "Required inputs: March–May TerraClimate precipitation total "
+                    "(pre_rainfall_mm) and mean soil moisture "
+                    "(pre_soil_moisture_mm), one row per study region. "
+                    "The current historical training file ends in 2021; it does "
+                    "not contain future predictor observations."
+                )
+                default_forecast_year = max(2027, int(pd.to_numeric(
+                    forecast_data["year"], errors="coerce").max()) + 1)
+                template = make_forecast_template(regions, default_forecast_year)
+                st.download_button(
+                    "Download future-input CSV template",
+                    data=template.to_csv(index=False).encode("utf-8"),
+                    file_name=f"FloodLens_Monsoon_Inputs_{default_forecast_year}.csv",
+                    mime="text/csv",
+                    key="future_forecast_template",
+                )
+                forecast_upload = st.file_uploader(
+                    "Upload March–May regional predictor CSV",
+                    type=["csv"],
+                    key="future_monsoon_predictors",
+                    help=("Required columns: year, region, pre_rainfall_mm, "
+                          "pre_soil_moisture_mm. Include all four regions once."),
+                )
+                input_mode = st.radio(
+                    "How should these inputs be interpreted?",
+                    ["Observed March–May data", "Scenario assumptions"],
+                    horizontal=True,
+                    key="forecast_input_mode",
+                )
+                if forecast_upload is not None:
+                    try:
+                        future_inputs = pd.read_csv(forecast_upload)
+                        required_future_cols = {
+                            "year", "region", "pre_rainfall_mm", "pre_soil_moisture_mm"
+                        }
+                        missing_future_cols = required_future_cols - set(future_inputs.columns)
+                        if missing_future_cols:
+                            st.error("Missing input columns: " + ", ".join(sorted(missing_future_cols)))
+                        else:
+                            future_inputs = future_inputs[list(required_future_cols)].copy()
+                            future_inputs["year"] = pd.to_numeric(future_inputs["year"], errors="coerce")
+                            for col in ["pre_rainfall_mm", "pre_soil_moisture_mm"]:
+                                future_inputs[col] = pd.to_numeric(future_inputs[col], errors="coerce")
+                            future_inputs["region"] = future_inputs["region"].astype(str).str.strip()
+                            history_end = int(pd.to_numeric(forecast_data["year"], errors="coerce").max())
+                            input_years = future_inputs["year"].dropna().unique()
+                            input_regions = future_inputs["region"].tolist()
+                            valid_regions = set(regions)
+                            problems = []
+                            if len(input_years) != 1:
+                                problems.append("Use one common forecast year in all rows.")
+                            elif input_years[0] <= history_end:
+                                problems.append(f"Forecast year must be after the training period ending {history_end}.")
+                            if len(input_regions) != len(regions) or set(input_regions) != valid_regions:
+                                problems.append("Include each of the four study regions exactly once, with exact region names.")
+                            if future_inputs["region"].duplicated().any():
+                                problems.append("Duplicate region rows were found.")
+                            if future_inputs[["pre_rainfall_mm", "pre_soil_moisture_mm"]].isna().any().any():
+                                problems.append("Predictor values must be numeric and non-empty.")
+                            if (future_inputs[["pre_rainfall_mm", "pre_soil_moisture_mm"]] < 0).any().any():
+                                problems.append("Predictor values cannot be negative.")
+                            if problems:
+                                for problem in problems:
+                                    st.error(problem)
+                            else:
+                                forecast_result = run_regional_forecast(
+                                    forecast_data, performance, future_inputs
+                                )
+                                forecast_year = int(input_years[0])
+                                mode_note = (
+                                    "Scenario projection only — inputs are assumptions, not observed measurements."
+                                    if input_mode == "Scenario assumptions"
+                                    else "Model estimate based on user-supplied observed March–May predictors."
+                                )
+                                st.success(f"Regional monsoon estimates generated for {forecast_year}.")
+                                st.caption(mode_note)
+                                display_forecast = forecast_result[[
+                                    "year", "region", "pre_rainfall_mm", "pre_soil_moisture_mm",
+                                    "ridge_prediction_mm", "baseline_prediction_mm",
+                                    "recommended_method", "selected_prediction_mm"
+                                ]].sort_values("region")
+                                st.dataframe(display_forecast.round(2), use_container_width=True, hide_index=True)
+                                fig_future = px.bar(
+                                    display_forecast,
+                                    x="region", y="selected_prediction_mm",
+                                    color="recommended_method", text_auto=".1f",
+                                    title=f"{forecast_year} experimental regional monsoon estimates",
+                                    labels={"region": "Study region", "selected_prediction_mm": "Estimated rainfall (mm)"},
+                                )
+                                st.plotly_chart(style_fig(fig_future, height=390), use_container_width=True)
+                                st.download_button(
+                                    "Download regional estimates",
+                                    data=display_forecast.to_csv(index=False).encode("utf-8"),
+                                    file_name=f"FloodLens_Regional_Monsoon_Estimates_{forecast_year}.csv",
+                                    mime="text/csv",
+                                    key="download_generated_forecast",
+                                )
+                                st.warning(
+                                    "Experimental estimate only. The model has five held-out "
+                                    "validation years per region, limited overall improvement, "
+                                    "and no calibrated prediction interval. It is not a flood warning."
+                                )
+                    except Exception as exc:
+                        st.error(f"Could not process the predictor file: {exc}")
+                else:
+                    st.caption(
+                        "No forecast has been generated yet. Download the template, "
+                        "fill it with real March–May regional predictor values, and upload it here."
+                    )
 
+            # -------- Historical validation summary (unchanged) --------
             if region_perf.empty:
                 st.warning("No performance summary is available for this region.")
             else:
@@ -1557,6 +1859,7 @@ elif page == "Regional monsoon outlook":
                 data=forecast_data.to_csv(index=False).encode("utf-8"),
                 file_name="FloodLens_Regional_Forecast_Dataset.csv",
                 mime="text/csv",
+                key="download_region_dataset",
             )
 
 # ---------------------------------------------------------------------------
@@ -1584,6 +1887,9 @@ elif page == "About & data":
           after Benjamini–Hochberg false-discovery-rate correction.
         - Elevation is static context, not a time-varying trend variable.
         - Satellite/model rainfall estimates have uncertainty and spatial resolution limits.
+        - The **Future Monsoon Outlook** is an exploratory statistical projection
+          based on historical NASA GPM regional monsoon totals. It is not an
+          operational forecast, nor is it a flood prediction.
         """
     )
     st.markdown("</div>", unsafe_allow_html=True)
@@ -1593,9 +1899,9 @@ elif page == "About & data":
         "Pakistan_GPM_Rainfall_2001_2024.csv\n"
         "FloodLens_Pakistan_Pixel_Trends_2001_2024.csv\n"
         "pakistan_boundary.geojson\n"
-        "FloodLens_Pakistan_Terrain_1km.tif  # optional\\n"
-        "FloodLens_Regional_Forecast_Dataset.csv\\n"
-        "FloodLens_Forecast_Validation.csv\\n"
+        "FloodLens_Pakistan_Terrain_1km.tif  # optional\n"
+        "FloodLens_Regional_Forecast_Dataset.csv\n"
+        "FloodLens_Forecast_Validation.csv\n"
         "FloodLens_Final_Regional_Performance.csv"
     )
     st.markdown("</div>", unsafe_allow_html=True)
