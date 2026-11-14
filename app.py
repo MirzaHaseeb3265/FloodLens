@@ -25,11 +25,11 @@ st.set_page_config(
 # ---------------------------------------------------------------------------
 # Global theme
 # ---------------------------------------------------------------------------
-ACCENT_CYAN = "#00E5FF"
-ACCENT_ORANGE = "#FC3D21"
+ACCENT_CYAN = "#27D9F2"
+ACCENT_ORANGE = "#FB7185"
 ACCENT_NASA_BLUE = "#0B3D91"
-TEXT_LIGHT = "#E6F1FF"
-TEXT_MUTED = "#8CA3C4"
+TEXT_LIGHT = "#F1F5F9"
+TEXT_MUTED = "#94A3B8"
 GRID_FAINT = "rgba(255,255,255,0.08)"
 
 # Palette requested for the future-outlook section
@@ -43,101 +43,74 @@ FUTURE_MUTED = "#94A3B8"
 FUTURE_POS = "#34D399"
 FUTURE_NEG = "#FB7185"
 
+BG_MAIN = "#080D18"
+
 
 def inject_css():
-    """Inject the whole mission-control theme in one place."""
+    """Inject the whole mission-control theme in one place, forcing dark mode on widgets."""
     st.markdown(
-        """
+        f"""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
 
-        :root {
-            --bg-0: #050A18;
-            --bg-1: #0B1226;
-            --panel: rgba(10, 22, 48, 0.55);
-            --panel-border: rgba(0, 229, 255, 0.18);
-            --cyan: #00E5FF;
-            --orange: #FC3D21;
-            --nasa-blue: #0B3D91;
-            --text: #E6F1FF;
-            --muted: #8CA3C4;
-        }
+        /* -------- Global Variables -------- */
+        :root {{
+            --bg-0: {BG_MAIN};
+            --bg-1: {FUTURE_BG2};
+            --panel: {FUTURE_PANEL};
+            --panel-border: rgba(39, 217, 242, 0.25);
+            --cyan: {ACCENT_CYAN};
+            --orange: {ACCENT_ORANGE};
+            --nasa-blue: {ACCENT_NASA_BLUE};
+            --text: {TEXT_LIGHT};
+            --muted: {TEXT_MUTED};
+        }}
 
-        .stApp {
+        /* -------- App Background -------- */
+        .stApp {{
             background:
                 radial-gradient(1200px 600px at 15% -10%, rgba(11,61,145,0.35), transparent 60%),
-                radial-gradient(900px 500px at 110% 20%, rgba(0,229,255,0.10), transparent 60%),
-                linear-gradient(160deg, #050A18 0%, #0B1226 100%);
+                radial-gradient(900px 500px at 110% 20%, rgba(39,217,242,0.10), transparent 60%),
+                linear-gradient(160deg, {BG_MAIN} 0%, {FUTURE_BG2} 100%);
             background-attachment: fixed;
             color: var(--text);
             font-family: 'Inter', sans-serif;
-        }
-        .stApp::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background-image:
-                radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.55), transparent 60%),
-                radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.45), transparent 60%),
-                radial-gradient(1px 1px at 40% 80%, rgba(0,229,255,0.55), transparent 60%),
-                radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.40), transparent 60%),
-                radial-gradient(1px 1px at 10% 75%, rgba(255,255,255,0.40), transparent 60%);
-            background-size: 400px 400px;
-            opacity: 0.5;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .stApp::after {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(0,229,255,0.035) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,229,255,0.035) 1px, transparent 1px);
-            background-size: 64px 64px;
-            pointer-events: none;
-            z-index: 0;
-        }
+        }}
+        
+        /* -------- Hide default Streamlit chrome -------- */
+        #MainMenu, header, footer {{ visibility: hidden; }}
+        .block-container {{ padding-top: 1.2rem; padding-bottom: 2rem; max-width: 1350px; }}
 
-        #MainMenu, header, footer { visibility: hidden; }
-        .block-container { padding-top: 1.2rem; padding-bottom: 2rem; max-width: 1350px; }
-
-        h1, h2, h3, h4, h5, h6, .stSubheader {
+        /* -------- Typography -------- */
+        h1, h2, h3, h4, h5, h6, .stSubheader {{
             font-family: 'Orbitron', 'Rajdhani', sans-serif !important;
             letter-spacing: 0.06em;
             color: var(--text) !important;
-        }
-        p, span, label, div, .stMarkdown { color: var(--text); }
+        }}
+        p, span, label, div, .stMarkdown {{ color: var(--text); }}
 
-        .fl-hero {
+        /* -------- Hero Header -------- */
+        .fl-hero {{
             position: relative;
             padding: 26px 30px 22px 30px;
             border-radius: 18px;
-            background: linear-gradient(135deg, rgba(11,61,145,0.35), rgba(0,229,255,0.06));
+            background: linear-gradient(135deg, rgba(11,61,145,0.35), rgba(39,217,242,0.06));
             border: 1px solid var(--panel-border);
-            box-shadow: 0 0 30px rgba(0,229,255,0.10), inset 0 0 24px rgba(0,229,255,0.04);
+            box-shadow: 0 0 30px rgba(39,217,242,0.10), inset 0 0 24px rgba(39,217,242,0.04);
             overflow: hidden;
-            animation: fadeIn 0.8s ease-out;
-        }
-        .fl-hero::before {
-            content: "";
-            position: absolute;
-            inset: -50% -20% auto auto;
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, rgba(0,229,255,0.18), transparent 60%);
-            pointer-events: none;
-        }
-        .fl-title {
+            margin-bottom: 20px;
+        }}
+        .fl-title {{
             font-family: 'Orbitron', sans-serif;
             font-weight: 900;
             font-size: 44px;
             letter-spacing: 0.32em;
             color: var(--text);
-            text-shadow: 0 0 18px rgba(0,229,255,0.55), 0 0 4px rgba(0,229,255,0.9);
+            text-shadow: 0 0 18px rgba(39,217,242,0.55), 0 0 4px rgba(39,217,242,0.9);
             margin: 0;
             line-height: 1.05;
-        }
-        .fl-sub {
+        }}
+        .fl-sub {{
             font-family: 'Rajdhani', sans-serif;
             font-weight: 500;
             font-size: 15px;
@@ -145,117 +118,190 @@ def inject_css():
             color: var(--muted);
             margin-top: 8px;
             text-transform: uppercase;
-        }
-        .fl-divider {
+        }}
+        .fl-divider {{
             margin: 16px 0 12px 0;
             height: 1px;
             background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-            box-shadow: 0 0 12px rgba(0,229,255,0.7);
+            box-shadow: 0 0 12px rgba(39,217,242,0.7);
             border: none;
-        }
-        .fl-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
-        .fl-chip {
+        }}
+        .fl-chips {{ display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }}
+        .fl-chip {{
             font-family: 'Rajdhani', sans-serif;
             font-size: 12px;
             letter-spacing: 0.16em;
             text-transform: uppercase;
             padding: 6px 12px;
             border-radius: 999px;
-            border: 1px solid rgba(0,229,255,0.35);
-            background: rgba(0,229,255,0.06);
+            border: 1px solid rgba(39,217,242,0.35);
+            background: rgba(39,217,242,0.06);
             color: var(--cyan);
-            box-shadow: 0 0 12px rgba(0,229,255,0.15);
-        }
-        .fl-chip.orange {
-            border-color: rgba(252,61,33,0.35);
-            background: rgba(252,61,33,0.06);
-            color: #FF8A73;
-        }
+            box-shadow: 0 0 12px rgba(39,217,242,0.15);
+        }}
+        .fl-chip.orange {{
+            border-color: rgba(251,113,133,0.35);
+            background: rgba(251,113,133,0.06);
+            color: #FDA4AF;
+        }}
 
-        .fl-card {
-            background: var(--panel);
-            border: 1px solid var(--panel-border);
+        /* -------- Future Panel & Disclaimers -------- */
+        .fl-future-panel {{
+            background: linear-gradient(160deg, {FUTURE_PANEL} 0%, {FUTURE_BG2} 100%);
+            border: 1px solid rgba(39,217,242,0.25);
             border-radius: 16px;
-            padding: 20px 22px;
-            box-shadow: 0 0 24px rgba(0,229,255,0.06), inset 0 0 18px rgba(0,229,255,0.03);
-            backdrop-filter: blur(8px);
+            padding: 22px 24px;
             margin-bottom: 18px;
-            animation: fadeIn 0.7s ease-out;
-            transition: border-color 0.25s ease, box-shadow 0.25s ease;
-        }
-        .fl-card:hover {
-            border-color: rgba(0,229,255,0.4);
-            box-shadow: 0 0 32px rgba(0,229,255,0.15), inset 0 0 22px rgba(0,229,255,0.05);
-        }
-        .fl-card-title {
+            box-shadow: 0 0 30px rgba(39,217,242,0.10);
+        }}
+        .fl-future-title {{
             font-family: 'Orbitron', sans-serif;
-            font-size: 13px;
+            font-size: 15px;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: var(--cyan);
-            margin-bottom: 14px;
-        }
+            color: {FUTURE_CYAN};
+            margin-bottom: 16px;
+        }}
+        .fl-future-disclaimer {{
+            background: rgba(251,113,133,0.08);
+            border-left: 3px solid {FUTURE_NEG};
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+            color: {FUTURE_TEXT};
+            margin: 14px 0;
+        }}
 
-        div[data-testid="stMetric"] {
-            background: var(--panel);
-            border: 1px solid var(--panel-border);
-            border-left: 3px solid var(--cyan);
+        /* -------- Widgets: Force Dark Theme Overrides -------- */
+        /* Dropdowns, Text Inputs, Number Inputs */
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="input"] > div,
+        div[data-testid="stNumberInput"] > div > div {{
+            background-color: {BG_MAIN} !important;
+            border: 1px solid rgba(39,217,242,0.3) !important;
+            border-radius: 8px !important;
+            color: {TEXT_LIGHT} !important;
+        }}
+        /* Dropdown Menu Popover */
+        div[data-baseweb="popover"] > div,
+        ul[data-testid="stSelectboxVirtualDropdown"] {{
+            background-color: {FUTURE_PANEL} !important;
+            border: 1px solid {FUTURE_CYAN} !important;
+        }}
+        ul[data-testid="stSelectboxVirtualDropdown"] li {{
+            color: {TEXT_LIGHT} !important;
+        }}
+        ul[data-testid="stSelectboxVirtualDropdown"] li:hover {{
+            background-color: rgba(39,217,242,0.15) !important;
+            color: {FUTURE_CYAN} !important;
+        }}
+        
+        /* Expander */
+        .stExpander {{
+            border: 1px solid rgba(39,217,242,0.25) !important;
+            border-radius: 12px !important;
+            background: {FUTURE_PANEL} !important;
+        }}
+        .stExpander summary {{
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 0.1em;
+            color: {FUTURE_CYAN} !important;
+            background-color: transparent !important;
+        }}
+        .stExpander details {{
+            background-color: {BG_MAIN} !important;
+        }}
+
+        /* Dataframe */
+        div[data-testid="stDataFrame"] {{
+            background-color: {FUTURE_PANEL} !important;
+            border: 1px solid rgba(39,217,242,0.2);
+            border-radius: 12px;
+            padding: 8px;
+        }}
+        div[data-testid="stDataFrame"] * {{
+            color: {TEXT_LIGHT} !important;
+        }}
+        /* Fix Streamlit dataframe header */
+        div[data-testid="stDataFrame"] th {{
+            background-color: {BG_MAIN} !important;
+            color: {FUTURE_CYAN} !important;
+            font-family: 'Rajdhani', sans-serif !important;
+        }}
+
+        /* Metrics (KPI cards) */
+        div[data-testid="stMetric"] {{
+            background: {FUTURE_PANEL};
+            border: 1px solid rgba(39,217,242,0.3);
+            border-left: 4px solid {FUTURE_CYAN};
             border-radius: 12px;
             padding: 14px 16px 12px 16px;
-            box-shadow: 0 0 18px rgba(0,229,255,0.08);
+            box-shadow: 0 0 18px rgba(39,217,242,0.08);
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-            animation: fadeIn 0.6s ease-out;
-        }
-        div[data-testid="stMetric"]:hover {
+        }}
+        div[data-testid="stMetric"]:hover {{
             transform: translateY(-2px);
-            box-shadow: 0 0 28px rgba(0,229,255,0.22);
-            border-left-color: var(--orange);
-        }
-        div[data-testid="stMetricLabel"] > div {
+            box-shadow: 0 0 28px rgba(39,217,242,0.22);
+            border-left-color: {FUTURE_BLUE};
+        }}
+        div[data-testid="stMetricLabel"] > div {{
             font-family: 'Rajdhani', sans-serif !important;
             font-size: 11px !important;
             letter-spacing: 0.18em !important;
             text-transform: uppercase !important;
-            color: var(--muted) !important;
-        }
-        div[data-testid="stMetricValue"] > div {
+            color: {FUTURE_MUTED} !important;
+        }}
+        div[data-testid="stMetricValue"] > div {{
             font-family: 'Orbitron', sans-serif !important;
             font-size: 26px !important;
             font-weight: 700 !important;
-            color: var(--cyan) !important;
-            text-shadow: 0 0 12px rgba(0,229,255,0.45);
-        }
+            color: {FUTURE_CYAN} !important;
+            text-shadow: 0 0 12px rgba(39,217,242,0.45);
+        }}
 
-        section[data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #070E1F 0%, #050A18 100%);
-            border-right: 1px solid rgba(0,229,255,0.15);
-            box-shadow: inset -1px 0 12px rgba(0,229,255,0.05);
-        }
-        section[data-testid="stSidebar"] h1,
-        section[data-testid="stSidebar"] h2,
-        section[data-testid="stSidebar"] h3 {
-            font-family: 'Orbitron', sans-serif !important;
-            color: var(--text) !important;
-            letter-spacing: 0.14em;
-        }
-        .fl-sidebar-logo {
+        /* -------- Buttons -------- */
+        .stButton>button, .stDownloadButton>button {{
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 0.1em;
+            background: rgba(39,217,242,0.08);
+            border: 1px solid rgba(39,217,242,0.4);
+            color: {FUTURE_CYAN};
+            border-radius: 10px;
+            transition: all 0.2s;
+        }}
+        .stButton>button:hover, .stDownloadButton>button:hover {{
+            background: rgba(39,217,242,0.18);
+            box-shadow: 0 0 18px rgba(39,217,242,0.3);
+            color: #fff;
+            border-color: {FUTURE_CYAN};
+        }}
+
+        /* -------- Sidebar -------- */
+        section[data-testid="stSidebar"] {{
+            background: linear-gradient(180deg, #070E1F 0%, {BG_MAIN} 100%);
+            border-right: 1px solid rgba(39,217,242,0.15);
+        }}
+        .fl-sidebar-logo {{
             font-family: 'Orbitron', sans-serif;
             font-size: 22px;
             font-weight: 900;
             letter-spacing: 0.28em;
             color: var(--text);
-            text-shadow: 0 0 14px rgba(0,229,255,0.6);
+            text-shadow: 0 0 14px rgba(39,217,242,0.6);
             margin-bottom: 2px;
-        }
-        .fl-sidebar-tag {
+        }}
+        .fl-sidebar-tag {{
             font-family: 'Rajdhani', sans-serif;
             font-size: 11px;
             letter-spacing: 0.22em;
             color: var(--cyan);
             text-transform: uppercase;
             margin-bottom: 18px;
-        }
-        section[data-testid="stSidebar"] div[role="radiogroup"] > label {
+        }}
+        /* Sidebar Menu Radio overrides */
+        section[data-testid="stSidebar"] div[role="radiogroup"] > label {{
             display: block;
             padding: 10px 14px;
             margin: 4px 0;
@@ -266,72 +312,40 @@ def inject_css():
             font-family: 'Rajdhani', sans-serif;
             letter-spacing: 0.06em;
             color: var(--text);
-        }
-        section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
-            background: rgba(0,229,255,0.06);
-            border-color: rgba(0,229,255,0.35);
-            box-shadow: 0 0 16px rgba(0,229,255,0.15);
-        }
-        section[data-testid="stSidebar"] div[role="radiogroup"] > label[data-checked="true"] {
-            background: linear-gradient(90deg, rgba(0,229,255,0.16), rgba(0,229,255,0.02));
+        }}
+        section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {{
+            background: rgba(39,217,242,0.06);
+            border-color: rgba(39,217,242,0.35);
+        }}
+        section[data-testid="stSidebar"] div[role="radiogroup"] > label[data-checked="true"] {{
+            background: linear-gradient(90deg, rgba(39,217,242,0.16), rgba(39,217,242,0.02));
             border-color: var(--cyan);
-            box-shadow: 0 0 20px rgba(0,229,255,0.28), inset 0 0 14px rgba(0,229,255,0.08);
+            box-shadow: 0 0 20px rgba(39,217,242,0.28);
+        }}
+        section[data-testid="stSidebar"] div[role="radiogroup"] > label[data-checked="true"] * {{
             color: var(--cyan) !important;
-        }
-        section[data-testid="stSidebar"] div[role="radiogroup"] > label[data-checked="true"] * {
-            color: var(--cyan) !important;
-        }
-        section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-child {
-            display: none;
-        }
-        section[data-testid="stSidebar"] .stCaption,
-        section[data-testid="stSidebar"] small {
-            color: var(--muted) !important;
-            letter-spacing: 0.08em;
-        }
+        }}
+        section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-child {{
+            display: none; /* Hide default dot */
+        }}
 
-        .stSlider label, .stSelectbox label, .stNumberInput label,
-        .stRadio > label, .stCheckbox label, .stTextInput label {
-            font-family: 'Rajdhani', sans-serif !important;
-            letter-spacing: 0.1em !important;
-            text-transform: uppercase !important;
-            font-size: 12px !important;
-            color: var(--muted) !important;
-        }
-        div[data-baseweb="slider"] > div > div > div > div {
-            background: linear-gradient(90deg, var(--cyan), var(--nasa-blue)) !important;
-        }
-        .stButton>button, .stDownloadButton>button {
-            font-family: 'Rajdhani', sans-serif;
-            letter-spacing: 0.1em;
-            background: rgba(0,229,255,0.08);
-            border: 1px solid rgba(0,229,255,0.4);
+        /* -------- Misc Components -------- */
+        .fl-card {{
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 20px 22px;
+            margin-bottom: 18px;
+        }}
+        .fl-card-title {{
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
             color: var(--cyan);
-            border-radius: 10px;
-        }
-        .stButton>button:hover {
-            background: rgba(0,229,255,0.18);
-            box-shadow: 0 0 18px rgba(0,229,255,0.3);
-            color: #fff;
-        }
-        .stExpander {
-            border: 1px solid var(--panel-border) !important;
-            border-radius: 12px !important;
-            background: rgba(10,22,48,0.4) !important;
-        }
-        .stExpander summary {
-            font-family: 'Rajdhani', sans-serif;
-            letter-spacing: 0.1em;
-            color: var(--cyan) !important;
-        }
-        code, pre {
-            background: rgba(0,0,0,0.35) !important;
-            color: #8CF8FF !important;
-            border-radius: 8px;
-        }
-        hr { border-color: rgba(0,229,255,0.15); }
-
-        .fl-hud-caption {
+            margin-bottom: 14px;
+        }}
+        .fl-hud-caption {{
             font-family: 'Rajdhani', sans-serif;
             font-size: 11px;
             letter-spacing: 0.14em;
@@ -340,78 +354,17 @@ def inject_css():
             margin: -8px 0 18px 2px;
             padding-left: 10px;
             border-left: 2px solid var(--cyan);
-        }
-
-        .fl-badge {
-            display: inline-block;
-            padding: 8px 14px;
-            margin: 6px 8px 0 0;
-            border-radius: 10px;
-            font-family: 'Rajdhani', sans-serif;
-            letter-spacing: 0.1em;
-            font-size: 13px;
-            border: 1px solid rgba(0,229,255,0.35);
-            background: rgba(0,229,255,0.06);
-            color: var(--cyan);
-            box-shadow: 0 0 12px rgba(0,229,255,0.15);
-        }
-        .fl-badge.orange {
-            border-color: rgba(252,61,33,0.4);
-            background: rgba(252,61,33,0.08);
-            color: #FF8A73;
-            box-shadow: 0 0 12px rgba(252,61,33,0.15);
-        }
-
-        .fl-section {
+        }}
+        .fl-section {{
             font-family: 'Orbitron', sans-serif;
             font-size: 14px;
             letter-spacing: 0.24em;
             text-transform: uppercase;
             color: var(--cyan);
-            margin: 6px 0 14px 2px;
+            margin: 24px 0 14px 2px;
             padding-bottom: 8px;
-            border-bottom: 1px solid rgba(0,229,255,0.2);
-        }
-
-        /* -------- Future outlook panel styling -------- */
-        .fl-future-panel {
-            background: linear-gradient(160deg, #141F30 0%, #101827 100%);
-            border: 1px solid rgba(39,217,242,0.25);
-            border-radius: 16px;
-            padding: 22px 24px;
-            margin-bottom: 18px;
-            box-shadow: 0 0 30px rgba(39,217,242,0.10);
-        }
-        .fl-future-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 15px;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            color: #27D9F2;
-            margin-bottom: 16px;
-        }
-        .fl-future-disclaimer {
-            background: rgba(251,113,133,0.08);
-            border-left: 3px solid #FB7185;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 13px;
-            line-height: 1.5;
-            color: #F1F5F9;
-            margin: 14px 0;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 900px) {
-            .fl-title { font-size: 30px; letter-spacing: 0.2em; }
-            .fl-sub { font-size: 12px; }
-            .block-container { padding-left: 0.8rem; padding-right: 0.8rem; }
-        }
+            border-bottom: 1px solid rgba(39,217,242,0.2);
+        }}
         </style>
         """,
         unsafe_allow_html=True,
@@ -434,13 +387,13 @@ def style_fig(fig, height=None, title=None):
         ),
         margin=dict(l=20, r=20, t=55, b=30),
         hoverlabel=dict(
-            bgcolor="#081A2E",
-            bordercolor=ACCENT_CYAN,
+            bgcolor=FUTURE_PANEL,
+            bordercolor=FUTURE_CYAN,
             font=dict(family="Inter, sans-serif", color=TEXT_LIGHT, size=12),
         ),
         legend=dict(
             bgcolor="rgba(0,0,0,0)",
-            bordercolor="rgba(0,229,255,0.2)",
+            bordercolor="rgba(39,217,242,0.2)",
             font=dict(color=TEXT_LIGHT),
         ),
     )
@@ -493,7 +446,6 @@ def read_csv(path):
 
 @st.cache_data
 def load_forecast_files():
-    """Load historical regional forecast experiment and validation outputs."""
     required_files = [
         FORECAST_DATA_FILE,
         FORECAST_VALIDATION_FILE,
@@ -506,12 +458,10 @@ def load_forecast_files():
     dataset = pd.read_csv(FORECAST_DATA_FILE)
     validation = pd.read_csv(FORECAST_VALIDATION_FILE)
     performance = pd.read_csv(FORECAST_PERFORMANCE_FILE)
-
     return dataset, validation, performance, []
 
 
 def make_forecast_template(regions, forecast_year):
-    """Create a blank upload template for one future monsoon season."""
     return pd.DataFrame({
         "year": [int(forecast_year)] * len(regions),
         "region": list(regions),
@@ -521,11 +471,6 @@ def make_forecast_template(regions, forecast_year):
 
 
 def run_regional_forecast(history, performance, future_inputs, alpha=10.0):
-    """Fit the historical Ridge experiment and produce regional estimates.
-
-    Unchanged from the original experiment (numeric predictors standardized,
-    region one-hot encoded, unpenalized intercept, Ridge alpha=10).
-    """
     feature_cols = ["pre_rainfall_mm", "pre_soil_moisture_mm"]
     target_col = "monsoon_rainfall_mm"
     regions = sorted(history["region"].dropna().unique().tolist())
@@ -588,7 +533,7 @@ def read_boundary(path):
         return json.load(f)
 
 
-def add_boundary_lines(fig, geojson, color="#00E5FF", width=1.4):
+def add_boundary_lines(fig, geojson, color="#27D9F2", width=1.4):
     if geojson.get("type") == "FeatureCollection":
         geometries = [
             feature.get("geometry")
@@ -643,16 +588,11 @@ def load_monthly():
         return None
     df = read_csv(MONTHLY_FILE)
     if "date" not in df or "monthly_rainfall_mm" not in df:
-        st.error(
-            "Monthly CSV needs columns named 'date' and "
-            "'monthly_rainfall_mm'."
-        )
+        st.error("Monthly CSV needs columns named 'date' and 'monthly_rainfall_mm'.")
         return None
     df = df[["date", "monthly_rainfall_mm"]].copy()
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
-    df["monthly_rainfall_mm"] = pd.to_numeric(
-        df["monthly_rainfall_mm"], errors="coerce"
-    )
+    df["monthly_rainfall_mm"] = pd.to_numeric(df["monthly_rainfall_mm"], errors="coerce")
     return df.dropna().sort_values("date")
 
 
@@ -662,10 +602,7 @@ def load_trends():
     df = read_csv(TRENDS_FILE)
     required = {"latitude", "longitude", "sen_slope_mm_year"}
     if not required.issubset(df.columns):
-        st.error(
-            "Trend CSV must include latitude, longitude and "
-            "sen_slope_mm_year columns."
-        )
+        st.error("Trend CSV must include latitude, longitude and sen_slope_mm_year columns.")
         return None
     for col in ["latitude", "longitude", "sen_slope_mm_year"]:
         df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -676,9 +613,7 @@ def load_trends():
         df[p_col] = pd.to_numeric(df[p_col], errors="coerce")
         df["significant_fdr"] = df[p_col] < 0.05
     elif "significant" in df.columns:
-        df["significant_fdr"] = df["significant"].astype(str).str.lower().isin(
-            ["true", "1", "yes"]
-        )
+        df["significant_fdr"] = df["significant"].astype(str).str.lower().isin(["true", "1", "yes"])
     else:
         df["significant_fdr"] = False
     return df.dropna(subset=["latitude", "longitude", "sen_slope_mm_year"])
@@ -688,15 +623,13 @@ def make_trend_map(trends, boundary, mode):
     plot_df = trends.copy()
     if mode == "Statistical significance":
         plot_df["status"] = np.where(
-            plot_df["significant_fdr"], "Significant after FDR",
-            "Not significant after FDR"
+            plot_df["significant_fdr"], "Significant after FDR", "Not significant after FDR"
         )
         fig = px.scatter(
-            plot_df, x="longitude", y="latitude",
-            color="status",
+            plot_df, x="longitude", y="latitude", color="status",
             color_discrete_map={
-                "Significant after FDR": "#00FF9C",
-                "Not significant after FDR": "#FF6B7A",
+                "Significant after FDR": FUTURE_POS,
+                "Not significant after FDR": FUTURE_NEG,
             },
             hover_data={
                 "sen_slope_mm_year": ":.2f",
@@ -712,8 +645,7 @@ def make_trend_map(trends, boundary, mode):
         )
     else:
         fig = px.scatter(
-            plot_df, x="longitude", y="latitude",
-            color="sen_slope_mm_year",
+            plot_df, x="longitude", y="latitude", color="sen_slope_mm_year",
             color_continuous_scale="Turbo",
             range_color=(-8, 16),
             hover_data={
@@ -756,16 +688,10 @@ def show_missing_files():
 
 
 # ---------------------------------------------------------------------------
-# NEW HELPERS: Regional GPM outlook computations
+# Regional GPM outlook helpers
 # ---------------------------------------------------------------------------
 @st.cache_data
 def load_regional_gpm_history():
-    """Load annual regional June–September GPM rainfall totals.
-
-    Reuses the existing regional forecast dataset (FloodLens_Regional_Forecast_Dataset.csv),
-    which contains the historical regional monsoon totals used by the Ridge model.
-    Returns a long dataframe with columns: year, region, monsoon_rainfall_mm.
-    """
     if not FORECAST_DATA_FILE.exists():
         return None
     df = read_csv(FORECAST_DATA_FILE)
@@ -774,16 +700,13 @@ def load_regional_gpm_history():
         return None
     out = df[["year", "region", "monsoon_rainfall_mm"]].copy()
     out["year"] = pd.to_numeric(out["year"], errors="coerce")
-    out["monsoon_rainfall_mm"] = pd.to_numeric(
-        out["monsoon_rainfall_mm"], errors="coerce"
-    )
+    out["monsoon_rainfall_mm"] = pd.to_numeric(out["monsoon_rainfall_mm"], errors="coerce")
     out = out.dropna(subset=["year", "region", "monsoon_rainfall_mm"])
     out["year"] = out["year"].astype(int)
     return out.sort_values(["region", "year"]).reset_index(drop=True)
 
 
 def fit_linear_trend(series_years, series_values):
-    """Simple OLS: y = slope * year + intercept. Returns (slope, intercept, r2)."""
     years = np.asarray(series_years, dtype=float)
     values = np.asarray(series_values, dtype=float)
     if len(years) < 2 or np.allclose(years, years[0]):
@@ -797,7 +720,6 @@ def fit_linear_trend(series_years, series_values):
 
 
 def compute_projection(regional_hist, region, target_year, method):
-    """Return a dict of projection stats for one region/method/target year."""
     sub = regional_hist[regional_hist["region"] == region].sort_values("year")
     if sub.empty:
         return None
@@ -811,7 +733,7 @@ def compute_projection(regional_hist, region, target_year, method):
     elif method == "Recent five-year average":
         last5 = values[-5:] if n >= 1 else values
         estimate = float(np.mean(last5))
-    else:  # Long-term historical average
+    else:
         estimate = float(np.mean(values))
 
     recent5 = float(np.mean(values[-5:])) if n >= 1 else np.nan
@@ -831,7 +753,6 @@ def compute_projection(regional_hist, region, target_year, method):
 
 
 def build_future_outlook_chart(regional_hist, region, target_year, method):
-    """Plotly chart: observed rainfall + trend line + extension to target_year."""
     sub = regional_hist[regional_hist["region"] == region].sort_values("year")
     if sub.empty:
         return None
@@ -841,60 +762,45 @@ def build_future_outlook_chart(regional_hist, region, target_year, method):
 
     fig = go.Figure()
 
-    # Observed rainfall
     fig.add_trace(go.Scatter(
-        x=years, y=values,
-        mode="lines+markers",
-        name="Observed GPM Jun–Sep total",
+        x=years, y=values, mode="lines+markers", name="Observed GPM Jun–Sep total",
         line=dict(color=FUTURE_CYAN, width=2.4),
-        marker=dict(size=8, color=FUTURE_CYAN,
-                    line=dict(color="#FFFFFF", width=1)),
+        marker=dict(size=8, color=FUTURE_CYAN, line=dict(color="#FFFFFF", width=1)),
     ))
 
-    # Trend line across historical span
     if not np.isnan(slope):
         trend_years = np.array([years.min(), years.max()])
         trend_vals = slope * trend_years + intercept
         fig.add_trace(go.Scatter(
-            x=trend_years, y=trend_vals,
-            mode="lines",
+            x=trend_years, y=trend_vals, mode="lines",
             name=f"Linear trend ({slope:+.2f} mm/year)",
             line=dict(color=FUTURE_VIOLET, width=2.2, dash="dash"),
         ))
 
-        # Extension to target year
         if target_year > years.max():
             ext_years = np.array([years.max(), float(target_year)])
             ext_vals = slope * ext_years + intercept
             fig.add_trace(go.Scatter(
-                x=ext_years, y=ext_vals,
-                mode="lines+markers",
+                x=ext_years, y=ext_vals, mode="lines+markers",
                 name=f"Trend extension → {int(target_year)}",
                 line=dict(color=FUTURE_BLUE, width=2.4, dash="dot"),
                 marker=dict(size=10, symbol="diamond", color=FUTURE_BLUE),
             ))
 
-    # Recent 5-year mean line
     recent5 = float(np.mean(values[-5:]))
     fig.add_trace(go.Scatter(
-        x=[years.min(), max(years.max(), float(target_year))],
-        y=[recent5, recent5],
-        mode="lines",
-        name=f"Recent 5-yr mean ({recent5:.0f} mm)",
+        x=[years.min(), max(years.max(), float(target_year))], y=[recent5, recent5],
+        mode="lines", name=f"Recent 5-yr mean ({recent5:.0f} mm)",
         line=dict(color=FUTURE_POS, width=1.5, dash="longdash"),
     ))
 
-    # Historical mean line
     hist_mean = float(np.mean(values))
     fig.add_trace(go.Scatter(
-        x=[years.min(), max(years.max(), float(target_year))],
-        y=[hist_mean, hist_mean],
-        mode="lines",
-        name=f"Historical mean ({hist_mean:.0f} mm)",
+        x=[years.min(), max(years.max(), float(target_year))], y=[hist_mean, hist_mean],
+        mode="lines", name=f"Historical mean ({hist_mean:.0f} mm)",
         line=dict(color=FUTURE_MUTED, width=1.2, dash="dot"),
     ))
 
-    # Vertical marker: last historical observation
     fig.add_vline(
         x=float(years.max()),
         line=dict(color=FUTURE_NEG, width=1.5, dash="dash"),
@@ -912,15 +818,14 @@ def build_future_outlook_chart(regional_hist, region, target_year, method):
     return style_fig(fig, height=470)
 
 
-def render_future_outlook(regional_hist, forecast_data, performance, validation):
-    """The new 'Future Monsoon Outlook – NASA GPM Historical Projections' section."""
+def render_future_outlook(regional_hist):
     st.markdown(
-        '<div class="fl-future-panel">'
-        '<div class="fl-future-title">🛰️ Future Monsoon Outlook – NASA GPM Historical Projections</div>',
+        f'<div class="fl-future-panel">'
+        f'<div class="fl-future-title">🛰️ Future Monsoon Outlook – NASA GPM Historical Projections</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
-        '<div class="fl-future-disclaimer">'
+        f'<div class="fl-future-disclaimer">'
         "These estimates are exploratory statistical projections based on historical "
         "NASA GPM rainfall observations. They assume that historical rainfall patterns "
         "remain informative about future conditions. Natural climate variability and "
@@ -941,32 +846,23 @@ def render_future_outlook(regional_hist, forecast_data, performance, validation)
     target_min = max(last_year + 1, 2027)
     target_max = max(target_min, 2035)
 
-    c1, c2, c3 = st.columns([2, 1.4, 2])
+    # Use columns for the selectors to make them align horizontally
+    c1, c2, c3 = st.columns([2, 1, 2])
     with c1:
         selected_region = st.selectbox(
-            "Study region",
-            regions,
-            index=regions.index("Punjab and upper Indus")
-            if "Punjab and upper Indus" in regions else 0,
+            "Study region", regions,
+            index=regions.index("Punjab and upper Indus") if "Punjab and upper Indus" in regions else 0,
             key="future_outlook_region",
         )
     with c2:
         target_year = st.number_input(
-            "Future year",
-            min_value=int(target_min),
-            max_value=int(target_max),
-            value=int(min(default_target, target_max)),
-            step=1,
-            key="future_outlook_year",
+            "Future year", min_value=int(target_min), max_value=int(target_max),
+            value=int(min(default_target, target_max)), step=1, key="future_outlook_year",
         )
     with c3:
         method = st.selectbox(
             "Projection method",
-            [
-                "Linear trend projection",
-                "Recent five-year average",
-                "Long-term historical average",
-            ],
+            ["Linear trend projection", "Recent five-year average", "Long-term historical average"],
             key="future_outlook_method",
         )
 
@@ -985,55 +881,39 @@ def render_future_outlook(regional_hist, forecast_data, performance, validation)
 
     # KPI cards
     k1, k2, k3, k4 = st.columns(4)
-    k1.metric(f"Estimated Jun–Sep rainfall ({int(target_year)})",
-              f'{proj["estimated_mm"]:,.0f} mm')
-    k2.metric("Historical trend",
-              f'{proj["trend_mm_per_year"]:+.2f} mm/yr'
-              if not np.isnan(proj["trend_mm_per_year"]) else "n/a")
+    k1.metric(f"Estimated Jun–Sep rainfall ({int(target_year)})", f'{proj["estimated_mm"]:,.0f} mm')
+    k2.metric("Historical trend", f'{proj["trend_mm_per_year"]:+.2f} mm/yr' if not np.isnan(proj["trend_mm_per_year"]) else "n/a")
     k3.metric("Recent 5-yr average", f'{proj["recent5_mean_mm"]:,.0f} mm')
     k4.metric("Historical average", f'{proj["historical_mean_mm"]:,.0f} mm')
 
-    st.caption(
-        f"Historical record: **{proj['first_year']}–{proj['last_year']}** "
-        f"(**{proj['n_years']} years** used) · trend R² = "
-        f"{proj['trend_r2']:.3f}" if not np.isnan(proj["trend_r2"])
-        else f"Historical record: **{proj['first_year']}–{proj['last_year']}** "
-             f"(**{proj['n_years']} years** used)"
-    )
+    if not np.isnan(proj["trend_r2"]):
+        st.caption(f"Historical record: **{proj['first_year']}–{proj['last_year']}** (**{proj['n_years']} years** used) · trend R² = {proj['trend_r2']:.3f}")
+    else:
+        st.caption(f"Historical record: **{proj['first_year']}–{proj['last_year']}** (**{proj['n_years']} years** used)")
 
     # Chart
-    chart = build_future_outlook_chart(regional_hist, selected_region,
-                                       int(target_year), method)
+    chart = build_future_outlook_chart(regional_hist, selected_region, int(target_year), method)
     if chart is not None:
-        st.plotly_chart(chart, use_container_width=True,
-                        key="future_outlook_chart")
+        st.plotly_chart(chart, use_container_width=True, key="future_outlook_chart")
     hud_caption("OBSERVED GPM JUN–SEP TOTALS · TREND · RECENT-5 MEAN · HISTORICAL MEAN · TARGET-YEAR EXTENSION")
 
-    # Comparison table — all four regions
-    st.markdown(
-        '<div class="fl-card-title" style="margin-top:14px;">'
-        'All-region projection comparison</div>',
-        unsafe_allow_html=True,
-    )
+    # Comparison table
+    st.markdown('<div class="fl-card-title" style="margin-top:14px;">All-region projection comparison</div>', unsafe_allow_html=True)
     rows = []
     for r in regions:
         p = compute_projection(regional_hist, r, int(target_year), method)
         if p is not None:
             rows.append({
                 "Region": r,
-                f"Estimated {int(target_year)} (mm)": round(p["estimated_mm"], 1)
-                if not np.isnan(p["estimated_mm"]) else None,
-                "Trend (mm/yr)": round(p["trend_mm_per_year"], 3)
-                if not np.isnan(p["trend_mm_per_year"]) else None,
+                f"Estimated {int(target_year)} (mm)": round(p["estimated_mm"], 1) if not np.isnan(p["estimated_mm"]) else None,
+                "Trend (mm/yr)": round(p["trend_mm_per_year"], 3) if not np.isnan(p["trend_mm_per_year"]) else None,
                 "Recent 5-yr mean (mm)": round(p["recent5_mean_mm"], 1),
                 "Historical mean (mm)": round(p["historical_mean_mm"], 1),
                 "Years used": p["n_years"],
             })
     comp_df = pd.DataFrame(rows)
-    st.dataframe(comp_df, use_container_width=True, hide_index=True,
-                 key="future_outlook_table")
+    st.dataframe(comp_df, use_container_width=True, hide_index=True, key="future_outlook_table")
 
-    # CSV download
     if not comp_df.empty:
         st.download_button(
             "⬇️ Download projection results (CSV)",
@@ -1055,7 +935,7 @@ inject_css()
 # Hero header
 # ---------------------------------------------------------------------------
 st.markdown(
-    """
+    f"""
     <div class="fl-hero">
         <div class="fl-title">🛰️ FLOODLENS</div>
         <div class="fl-sub">Pakistan Earth-System Trend Explorer | NASA GPM IMERG &amp; SRTM</div>
@@ -1071,7 +951,7 @@ st.markdown(
 )
 
 # ---------------------------------------------------------------------------
-# Sidebar: mission-control menu
+# Sidebar
 # ---------------------------------------------------------------------------
 with st.sidebar:
     st.markdown(
@@ -1127,14 +1007,8 @@ if page == "National overview":
         st.markdown('<div class="fl-card"><div class="fl-card-title">Telemetry · Dataset</div>', unsafe_allow_html=True)
         c1, c2, c3 = st.columns(3)
         c1.metric("Monthly observations", f"{len(monthly):,}")
-        c2.metric(
-            "Years covered",
-            f"{monthly['date'].dt.year.min()}–{monthly['date'].dt.year.max()}",
-        )
-        c3.metric(
-            "Mean annual rainfall",
-            f"{annual['annual_rainfall_mm'].mean():,.1f} mm",
-        )
+        c2.metric("Years covered", f"{monthly['date'].dt.year.min()}–{monthly['date'].dt.year.max()}")
+        c3.metric("Mean annual rainfall", f"{annual['annual_rainfall_mm'].mean():,.1f} mm")
         st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown('<div class="fl-card"><div class="fl-card-title">Annual Signal</div>', unsafe_allow_html=True)
@@ -1146,7 +1020,7 @@ if page == "National overview":
             line=dict(color=ACCENT_CYAN, width=2.4, shape="spline"),
             marker=dict(size=8, color=ACCENT_CYAN, line=dict(width=1.5, color="white")),
             fill="tozeroy",
-            fillcolor="rgba(0,229,255,0.12)",
+            fillcolor="rgba(39,217,242,0.12)",
         )
         fig.update_layout(xaxis_title="Year", yaxis_title="Annual rainfall (mm)")
         fig = style_fig(fig, height=460)
@@ -1203,7 +1077,7 @@ elif page == "Rainfall explorer":
         fig.update_traces(
             line=dict(color=ACCENT_CYAN, width=1.8),
             fill="tozeroy",
-            fillcolor="rgba(0,229,255,0.10)",
+            fillcolor="rgba(39,217,242,0.10)",
         )
         fig.update_layout(xaxis_title="Month", yaxis_title="Rainfall (mm)")
         fig = style_fig(fig, height=430)
@@ -1222,7 +1096,7 @@ elif page == "Rainfall explorer":
                 [0.0, "#050A18"],
                 [0.25, "#0B3D91"],
                 [0.55, "#00A6C0"],
-                [0.8, "#00E5FF"],
+                [0.8, ACCENT_CYAN],
                 [1.0, "#FFFFFF"],
             ],
             labels=dict(x="Month", y="Year", color="Rainfall (mm)"),
@@ -1457,7 +1331,7 @@ elif page == "Terrain explorer":
 
 
 # ---------------------------------------------------------------------------
-# PAGE: Regional monsoon outlook  (UPGRADED)
+# PAGE: Regional monsoon outlook  (UPGRADED & FIXED)
 # ---------------------------------------------------------------------------
 elif page == "Regional monsoon outlook":
     st.markdown(
@@ -1468,12 +1342,10 @@ elif page == "Regional monsoon outlook":
 
     forecast_data, validation, performance, missing_forecast_files = load_forecast_files()
 
-    # -----------------------------------------------------------------------
-    # PRIMARY FEATURE: Future Monsoon Outlook from historical GPM data
-    # -----------------------------------------------------------------------
+    # 1. PRIMARY FEATURE: Future Monsoon Outlook
     regional_hist = load_regional_gpm_history()
     if regional_hist is not None and not regional_hist.empty:
-        render_future_outlook(regional_hist, forecast_data, performance, validation)
+        render_future_outlook(regional_hist)
     else:
         st.warning(
             "The regional historical GPM rainfall file "
@@ -1482,12 +1354,9 @@ elif page == "Regional monsoon outlook":
             "Add it to the data/ folder to enable the future outlook."
         )
 
-    # -----------------------------------------------------------------------
-    # PRESERVED: Historical Ridge experiment & validation (unchanged)
-    # -----------------------------------------------------------------------
+    # 2. PRESERVED: Historical Ridge Experiment
     st.markdown(
-        '<div class="fl-section" style="margin-top:24px;">'
-        'Historical Ridge Experiment & Backtesting (2001–2021)</div>',
+        '<div class="fl-section">Historical Ridge Experiment & Backtesting (2001–2021)</div>',
         unsafe_allow_html=True,
     )
     st.info(
@@ -1567,19 +1436,12 @@ elif page == "Regional monsoon outlook":
                 forecast_data["region"] == selected_region
             ].sort_values("year")
 
-            # -------- Optional Ridge-based upload tool (advanced) --------
+            # Optional Ridge-based upload tool
             with st.expander("🔬 Advanced · Upload March–May predictors for Ridge experiment"):
                 st.write(
                     "Upload March–May predictor values for a future monsoon year. "
                     "The app will fit the same historical Ridge experiment and "
                     "apply the region-specific method selected by the backtest."
-                )
-                st.info(
-                    "Required inputs: March–May TerraClimate precipitation total "
-                    "(pre_rainfall_mm) and mean soil moisture "
-                    "(pre_soil_moisture_mm), one row per study region. "
-                    "The current historical training file ends in 2021; it does "
-                    "not contain future predictor observations."
                 )
                 default_forecast_year = max(2027, int(pd.to_numeric(
                     forecast_data["year"], errors="coerce").max()) + 1)
@@ -1685,7 +1547,7 @@ elif page == "Regional monsoon outlook":
                         "fill it with real March–May regional predictor values, and upload it here."
                     )
 
-            # -------- Historical validation summary (unchanged) --------
+            # Historical validation summary (unchanged)
             if region_perf.empty:
                 st.warning("No performance summary is available for this region.")
             else:
