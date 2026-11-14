@@ -1,0 +1,5 @@
+region,Ridge_MAE,Baseline_MAE,Improvement_mm,Improvement_percent,Recommended_method
+Balochistan and western Pakistan,48.75,23.55,-25.2,-107.00636942675159,Historical baseline
+Northern Pakistan,59.88,72.48,12.6,17.384105960264897,Experimental Ridge
+Punjab and upper Indus,13.71,30.17,16.46,54.557507457739476,Experimental Ridge
+Sindh and lower Indus,83.51,83.27,-0.24,-0.28821904647532126,Historical baseline
